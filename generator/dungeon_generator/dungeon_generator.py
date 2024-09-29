@@ -1,12 +1,10 @@
-from dungeon import DungeonArea
-from dungeon.dungeon_designers.iterable_designers.room_neighbours_designer import (
-    RoomNeighboursDesigner,
-)
 from tcod import tcod
 
-from dungeon_gen.config.dungeon_config import DungeonConfig
-from dungeon_gen.dungeon_generator.dungeon import Dungeon
-from dungeon_gen.dungeon_renderer.renderer import Renderer
+from areas.dungeon_area import DungeonArea
+from config.dungeon_config import DungeonConfig
+from dungeon_designers.prototype_designer import PrototypeDesigner
+from dungeon_generator.dungeon import Dungeon
+from dungeon_renderer.renderer import Renderer
 
 
 class DungeonGenerator:
@@ -17,7 +15,7 @@ class DungeonGenerator:
     def generate(self):
         dungeon_area = DungeonArea(self.config.dungeon_area.size)
 
-        generator = RoomNeighboursDesigner(self.config.dungeon_area)
+        generator = PrototypeDesigner(self.config.dungeon_area)
         generator.populate(dungeon_area)
         renderer = Renderer(dungeon_area)
         root_console = tcod.console.Console(
