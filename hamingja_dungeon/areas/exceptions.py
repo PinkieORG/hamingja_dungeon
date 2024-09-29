@@ -1,0 +1,2 @@
+class EmptyFitArea(Exception):
+    pass
