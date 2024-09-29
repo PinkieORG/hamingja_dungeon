@@ -1,8 +1,8 @@
 import numpy as np
 from tcod.console import Console
 
-from dungeon.areas.dungeon_object import DungeonObject
-from dungeon.tile_types import carpet, void, bg
+from areas.dungeon_object import DungeonObject
+from tile_types import bg
 
 
 class Renderer:
