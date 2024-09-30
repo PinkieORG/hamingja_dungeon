@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
@@ -7,18 +8,20 @@ from hamingja_dungeon.areas.area import Area
 from hamingja_dungeon.areas.dimension_range import DimensionSampler
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
+from hamingja_dungeon.areas.morphology.morphology import prune
 from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.utils import circle_mask
 
 ROOM_MIN_SIZE = (3, 3)
 
 
 class Room(DungeonObject):
     def __init__(
-        self,
-        size: Tuple[int, int],
-        fill_value: np.ndarray = None,
-        border_thickness: int = 1,
-        border_fill_value: np.ndarray = None,
+            self,
+            size: Tuple[int, int],
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
     ):
         if fill_value is None:
             fill_value = tile_types.floor
@@ -30,16 +33,17 @@ class Room(DungeonObject):
             border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
+        self.room_anchor = self.connected_border()
 
 
 class LRoom(Room):
     def __init__(
-        self,
-        size: Tuple[int, int],
-        fill_value: np.ndarray = None,
-        border_thickness: int = 1,
-        border_fill_value: np.ndarray = None,
-        direction: Direction = None,
+            self,
+            size: Tuple[int, int],
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
+            direction: Direction = None,
     ):
         if direction is None:
             direction = Direction.get_random_direction()
@@ -67,3 +71,32 @@ class LRoom(Room):
         origin = fit_area.sample()
         self.remove_area(origin, filling)
         self.draw_border(border_fill_value)
+        self.room_anchor = self.connected_border()
+
+
+class CircleRoom(Room):
+    def __init__(
+            self,
+            dim: int,
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
+    ):
+        if border_fill_value is None:
+            border_fill_value = tile_types.wall
+        # Circle room dimension has to be odd.
+        if dim % 2 == 0:
+            dim -= 1
+        super().__init__(
+            (dim, dim),
+            fill_value=fill_value,
+            border_thickness=border_thickness,
+            border_fill_value=border_fill_value,
+        )
+        self.mask = circle_mask(dim)
+        self.draw_border(border_fill_value)
+
+        room_anchor = deepcopy(self.mask)
+        room_anchor[1:-1, 1:-1] = False
+        room_anchor = prune(room_anchor)
+        self.room_anchor = Area.from_array(room_anchor)
