@@ -1,7 +1,7 @@
+from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
-from scipy.ndimage import distance_transform_edt
 
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.areas.area import Area
@@ -9,6 +9,7 @@ from hamingja_dungeon.areas.dimension_range import DimensionSampler
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
 from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.utils import circle_mask
 
 ROOM_MIN_SIZE = (3, 3)
 
@@ -31,6 +32,7 @@ class Room(DungeonObject):
             border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
+        self.room_anchor = self.connected_border()
 
 
 class LRoom(Room):
@@ -91,3 +93,7 @@ class CircleRoom(Room):
         )
         self.mask = circle_mask(dim)
         self.draw_border(border_fill_value)
+
+        room_anchor = deepcopy(self.mask)
+        room_anchor[1:-1, 1:-1] = False
+        self.room_anchor = room_anchor
