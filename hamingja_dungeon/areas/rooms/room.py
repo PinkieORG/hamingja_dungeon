@@ -89,8 +89,5 @@ class CircleRoom(Room):
             border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
-        without_middle = np.ones(self.size)
-        without_middle[dim // 2, dim // 2] = 0
-        distance_map = distance_transform_edt(without_middle)
-        self.mask = distance_map <= dim // 2
+        self.mask = circle_mask(dim)
         self.draw_border(border_fill_value)
