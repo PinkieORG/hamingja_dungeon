@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import numpy as np
+from scipy.ndimage import distance_transform_edt
 
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.areas.area import Area
@@ -14,11 +15,11 @@ ROOM_MIN_SIZE = (3, 3)
 
 class Room(DungeonObject):
     def __init__(
-        self,
-        size: Tuple[int, int],
-        fill_value: np.ndarray = None,
-        border_thickness: int = 1,
-        border_fill_value: np.ndarray = None,
+            self,
+            size: Tuple[int, int],
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
     ):
         if fill_value is None:
             fill_value = tile_types.floor
@@ -34,12 +35,12 @@ class Room(DungeonObject):
 
 class LRoom(Room):
     def __init__(
-        self,
-        size: Tuple[int, int],
-        fill_value: np.ndarray = None,
-        border_thickness: int = 1,
-        border_fill_value: np.ndarray = None,
-        direction: Direction = None,
+            self,
+            size: Tuple[int, int],
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
+            direction: Direction = None,
     ):
         if direction is None:
             direction = Direction.get_random_direction()
@@ -66,4 +67,31 @@ class LRoom(Room):
             raise EmptyFitArea("Cannot fit the filling.")
         origin = fit_area.sample()
         self.remove_area(origin, filling)
+        self.draw_border(border_fill_value)
+
+
+class CircleRoom(Room):
+    def __init__(
+            self,
+            size: Tuple[int, int],
+            fill_value: np.ndarray = None,
+            border_thickness: int = 1,
+            border_fill_value: np.ndarray = None,
+    ):
+        if border_fill_value is None:
+            border_fill_value = tile_types.wall
+        dim = min(size)
+        if dim % 2 == 0:
+            dim -= 1
+        size = (dim, dim)
+        super().__init__(
+            size,
+            fill_value=fill_value,
+            border_thickness=border_thickness,
+            border_fill_value=border_fill_value,
+        )
+        without_middle = np.ones(self.size)
+        without_middle[dim // 2, dim // 2] = 0
+        distance_map = distance_transform_edt(without_middle)
+        self.mask = distance_map <= dim // 2
         self.draw_border(border_fill_value)
