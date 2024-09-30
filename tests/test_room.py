@@ -5,5 +5,5 @@ from test_utils import print_dungeon_object
 
 
 class TestCircleRoom(TestCase):
-    circle_room = CircleRoom((15, 15))
+    circle_room = CircleRoom(20)
     print_dungeon_object(circle_room)
