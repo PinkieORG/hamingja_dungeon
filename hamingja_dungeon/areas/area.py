@@ -258,7 +258,7 @@ class Area:
             raise ValueError("Anchor has to be subset of the object.")
         if to_fit.size != to_fit_anchor.size:
             raise ValueError(
-                "The object to fit has to have the same size as " "its anchor."
+                "The object to fit has to have the same size as its anchor."
             )
         if not to_fit_anchor.is_subset_of(to_fit):
             raise ValueError("The object to fit has to be a superset of its anchor.")

@@ -3,7 +3,7 @@ import random
 from hamingja_dungeon.areas.dimension_range import DimensionSampler
 from hamingja_dungeon.areas.dungeon_area import DungeonArea
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.rooms.room import LRoom, Room
+from hamingja_dungeon.areas.rooms.room import CircleRoom, LRoom, Room
 from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import \
     AbstractDungeonAreaDesigner
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import \
@@ -31,7 +31,7 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
         if num < 0.8:
             room = Room(size)
         else:
-            room = LRoom(size)
+            room = CircleRoom(min(size))
         return room
 
     def _prepare(self, dungeon_area: DungeonArea):

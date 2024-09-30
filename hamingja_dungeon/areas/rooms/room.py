@@ -8,6 +8,7 @@ from hamingja_dungeon.areas.area import Area
 from hamingja_dungeon.areas.dimension_range import DimensionSampler
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
+from hamingja_dungeon.areas.morphology.morphology import prune
 from hamingja_dungeon.direction.direction import Direction
 from hamingja_dungeon.utils.utils import circle_mask
 
@@ -97,4 +98,5 @@ class CircleRoom(Room):
 
         room_anchor = deepcopy(self.mask)
         room_anchor[1:-1, 1:-1] = False
-        self.room_anchor = room_anchor
+        room_anchor = prune(room_anchor)
+        self.room_anchor = Area.from_array(room_anchor)
