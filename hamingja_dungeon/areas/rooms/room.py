@@ -73,19 +73,18 @@ class LRoom(Room):
 class CircleRoom(Room):
     def __init__(
             self,
-            size: Tuple[int, int],
+            dim: int,
             fill_value: np.ndarray = None,
             border_thickness: int = 1,
             border_fill_value: np.ndarray = None,
     ):
         if border_fill_value is None:
             border_fill_value = tile_types.wall
-        dim = min(size)
+        # Circle room dimension has to be odd.
         if dim % 2 == 0:
             dim -= 1
-        size = (dim, dim)
         super().__init__(
-            size,
+            (dim, dim),
             fill_value=fill_value,
             border_thickness=border_thickness,
             border_fill_value=border_fill_value,
