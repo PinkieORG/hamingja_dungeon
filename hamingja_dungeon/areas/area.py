@@ -13,7 +13,7 @@ from hamingja_dungeon.areas.morphology.structure_elements import (
     VERTICAL,
     CORNERS,
 )
-from hamingja_dungeon.areas.point import Point
+from hamingja_dungeon.areas.vector import Vector
 from hamingja_dungeon.direction.direction import Direction
 
 
@@ -25,7 +25,7 @@ class Area:
             raise ValueError("The size has to be positive.")
         self._mask = np.full(size, fill_value=True, dtype=np.bool)
 
-    def _set_mask_values(self, origin: Point, mask: Area, set_to: bool) -> None:
+    def _set_mask_values(self, origin: Vector, mask: Area, set_to: bool) -> None:
         """Sets values defined by the true values of the new mask inserted to
         the given origin."""
         if not origin.is_positive():
@@ -134,9 +134,9 @@ class Area:
 
     def intersection(
         self,
-        origin_first: Point,
+        origin_first: Vector,
         first: Area,
-        origin_second: Point,
+        origin_second: Vector,
         second: Area,
     ) -> Area:
         """Returns an intersection of two areas."""
@@ -159,11 +159,11 @@ class Area:
         image = np.where(self._mask, "■", "□")
         print(image)
 
-    def inside_bbox(self, p: Point) -> bool:
+    def inside_bbox(self, p: Vector) -> bool:
         """Checks whether a point is inside the bounding box of the area."""
         return 0 <= p.y < self.h and 0 <= p.x < self.w
 
-    def inside(self, p: Point) -> bool:
+    def inside(self, p: Vector) -> bool:
         """Checks whether a point is inside the area."""
         if not self.inside_bbox(p):
             return False
@@ -179,12 +179,12 @@ class Area:
         """Return true if there are no true elements"""
         return not np.any(self.mask)
 
-    def insert_area(self, origin: Point, to_put: Area) -> Area:
+    def insert_area(self, origin: Vector, to_put: Area) -> Area:
         """Inserts another area inside with respect to its origin and mask."""
         self._set_mask_values(origin, to_put, True)
         return self
 
-    def remove_area(self, origin: Point, to_remove: Area) -> Area:
+    def remove_area(self, origin: Vector, to_remove: Area) -> Area:
         """Removes another area defined by its true values with respect to its
         origin."""
         self._set_mask_values(origin, to_remove, False)
@@ -233,12 +233,12 @@ class Area:
         """Returns a border without the area's outside corners."""
         return self.border_of_thickness() - self.corners()
 
-    def sample(self) -> Point:
+    def sample(self) -> Vector:
         """Samples and returns a position of a true value within the area."""
         if self.is_empty():
             raise ValueError("Cannot sample from an empty area.")
         sample = random.choice(np.argwhere(self.mask))
-        return Point(sample[0], sample[1])
+        return Vector(sample[0], sample[1])
 
     def fit_in(
         self, to_fit: Area, anchor: Area = None, to_fit_anchor: Area = None

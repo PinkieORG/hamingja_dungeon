@@ -6,7 +6,7 @@ from hamingja_dungeon import tile_types
 from hamingja_dungeon.areas.area import Area
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.point import Point
+from hamingja_dungeon.areas.vector import Vector
 from hamingja_dungeon.areas.rooms.room import Room
 
 
@@ -47,7 +47,7 @@ class DungeonArea(DungeonObject):
             to_fit, anchor=anchor, to_fit_anchor=to_fit.room_anchor
         )
 
-    def add_room(self, origin: Point, room: Room) -> int:
+    def add_room(self, origin: Vector, room: Room) -> int:
         """Adds a new room at the given origin. Returns its new id."""
         id = self.add_child(origin, room)
         # self.room_graph.push(id)

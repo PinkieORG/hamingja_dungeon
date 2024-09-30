@@ -57,7 +57,7 @@ class LRoom(Room):
         )
         dim_range = DimensionSampler(
             (
-                int(self.h / 2.5),
+                int(self.h // 2.5),
                 int(self.h // 1.5),
                 int(self.w // 2.5),
                 int(self.w // 1.5),

@@ -7,13 +7,13 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.point import Point
+from hamingja_dungeon.areas.vector import Vector
 from hamingja_dungeon.tile_types import default, tile_dt
 
 
 @dataclass
 class Child:
-    origin: Point
+    origin: Vector
     object: DungeonObject
 
 
@@ -99,7 +99,7 @@ class DungeonObject(Area):
             raise ValueError("fill_value needs to have the tile dtype.")
         self.draw(value, mask=self.inside_area())
 
-    def draw_dungeon_object(self, p: Point, dungeon_object: DungeonObject) -> None:
+    def draw_dungeon_object(self, p: Vector, dungeon_object: DungeonObject) -> None:
         """Will draw another dungeon object with respect to its mask. If it
         protrudes outside of this objects area it will be cropped."""
         if not p.is_positive():
@@ -117,7 +117,7 @@ class DungeonObject(Area):
         ]
         afflicted_tiles[cropped_mask] = cropped_tiles[cropped_mask]
 
-    def add_child(self, origin: Point, dungeon_object: DungeonObject) -> int:
+    def add_child(self, origin: Vector, dungeon_object: DungeonObject) -> int:
         """Adds child to the object. Returns its new id."""
         if not origin.is_positive():
             raise ValueError("The origin of the new child has to be positive.")
