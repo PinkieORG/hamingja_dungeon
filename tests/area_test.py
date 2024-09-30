@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from areas.area import Area
-from direction.direction import Direction
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.direction.direction import Direction
 from test_utils import print_test_areas, get_test_areas, print_name
 
 

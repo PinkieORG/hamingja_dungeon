@@ -1,6 +1,6 @@
 import unittest
 
-from areas.morphology.morphology import prune
+from hamingja_dungeon.areas.morphology.morphology import prune
 from test_utils import c_shape
 
 

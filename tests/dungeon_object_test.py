@@ -3,9 +3,9 @@ import unittest
 import numpy as np
 from scipy.ndimage import binary_dilation
 
-from areas.dungeon_object import DungeonObject
-from areas.point import Point
-from tile_types import wall, carpet, column
+from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.areas.point import Point
+from hamingja_dungeon.tile_types import carpet, column, wall
 from test_utils import (
     get_test_dungeon_objects,
     print_name,
