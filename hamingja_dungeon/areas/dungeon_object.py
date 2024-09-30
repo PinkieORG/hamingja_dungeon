@@ -63,9 +63,10 @@ class DungeonObject(Area):
             afflicted_area[object.mask] = True
         return result
 
-    def area_without_children(self) -> Area:
+    def childless_area(self) -> Area:
         """Returns an area with the children removed."""
-        return ~self.children_area()
+        result = Area.from_array(self.mask)
+        return result & ~self.children_area()
 
     def inside_area(self) -> Area:
         """Returns an area without the border."""
@@ -156,17 +157,13 @@ class DungeonObject(Area):
             )
         if to_fit.border_thickness > 1 or neighbour.object.border_thickness > 1:
             raise NotImplemented
-        neighbour_border = neighbour.object.border_of_thickness(
-            min(neighbour.object.border_thickness, to_fit.border_thickness)
-        )
-        neighbour_connected_border = neighbour.object.connected_border()
+
         anchor = Area.empty_area(self.size).insert_area(
-            neighbour.origin, neighbour_connected_border
+            neighbour.origin, neighbour.object.border()
         )
-        without_children = (~self.children_area()).insert_area(
-            neighbour.origin, neighbour_border
+        without_children = self.childless_area().insert_area(
+            neighbour.origin, neighbour.object.border()
         )
-        to_fit_anchor = to_fit.connected_border()
         return without_children.fit_in(
-            to_fit, anchor=anchor, to_fit_anchor=to_fit_anchor
+            to_fit, anchor=anchor, to_fit_anchor=to_fit.border()
         )
