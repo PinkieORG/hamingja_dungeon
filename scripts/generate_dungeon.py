@@ -3,8 +3,8 @@ import argparse
 import yaml
 from yaml import Loader
 
-from config.dungeon_config import DungeonConfig
-from dungeon_generator.dungeon_generator import DungeonGenerator
+from utils.ascii_dungeon_generator.ascii_dungeon_generator import ASCIIDungeonGenerator
+from utils.ascii_dungeon_generator.config.ascii_dungeon_config import ASCIIDungeonConfig
 
 
 def get_args():
@@ -27,8 +27,8 @@ if __name__ == "__main__":
 
     with open(args.config, "r") as file:
         data = yaml.load(file, Loader=Loader)
-    gen_config = DungeonConfig(**data)
-    generator = DungeonGenerator(gen_config)
+    gen_config = ASCIIDungeonConfig(**data)
+    generator = ASCIIDungeonGenerator(gen_config)
 
     dungeon = generator.generate()
     dungeon.save_as(args.output_file)

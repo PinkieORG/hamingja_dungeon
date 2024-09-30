@@ -1,14 +1,14 @@
 from tcod import tcod
 
 from areas.dungeon_area import DungeonArea
-from config.dungeon_config import DungeonConfig
 from dungeon_designers.prototype_designer import PrototypeDesigner
-from dungeon_generator.dungeon import Dungeon
-from dungeon_renderer.renderer import Renderer
+from utils.ascii_dungeon_generator.ascii_dungeon import ASCIIDungeon
+from utils.ascii_dungeon_generator.config.ascii_dungeon_config import ASCIIDungeonConfig
+from utils.ascii_dungeon_generator.dungeon_renderer.renderer import Renderer
 
 
-class DungeonGenerator:
-    def __init__(self, dungeon_config: DungeonConfig):
+class ASCIIDungeonGenerator:
+    def __init__(self, dungeon_config: ASCIIDungeonConfig):
         self.config = dungeon_config
         self.generated_count = 1
 
@@ -27,7 +27,7 @@ class DungeonGenerator:
         raw_output = root_console.__str__()
         raw_output = raw_output[1:-1]
 
-        dungeon = Dungeon(
+        dungeon = ASCIIDungeon(
             raw_output, self.config.base_name + "_" + str(self.generated_count)
         )
         self.generated_count = self.generated_count + 1

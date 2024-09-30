@@ -6,7 +6,7 @@ from scipy.ndimage import binary_dilation
 from areas.dungeon_object import DungeonObject
 from areas.point import Point
 from tile_types import wall, carpet, column
-from utils import (
+from test_utils import (
     get_test_dungeon_objects,
     print_name,
     print_dungeon_object,

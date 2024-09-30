@@ -1,5 +1,5 @@
 
-class Dungeon:
+class ASCIIDungeon:
     def __init__(self, content: str, name: str = "new_dungeon"):
         self.name = name
         self.content = content

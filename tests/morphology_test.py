@@ -1,7 +1,7 @@
 import unittest
 
 from areas.morphology.morphology import prune
-from utils import c_shape
+from test_utils import c_shape
 
 
 class PrintTests(unittest.TestCase):
