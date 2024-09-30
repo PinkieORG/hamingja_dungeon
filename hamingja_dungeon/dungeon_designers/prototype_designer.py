@@ -1,12 +1,14 @@
 import random
 
-from areas.dimension_range import DimensionSampler
-from areas.dungeon_area import DungeonArea
-from areas.exceptions import EmptyFitArea
-from areas.rooms.room import Room, LRoom
-from dungeon_designers.abstract_dungeon_area_designer import AbstractDungeonAreaDesigner
-from dungeon_designers.config.dungeon_area_config import DungeonAreaConfig
-from tile_types import carpet
+from hamingja_dungeon.areas.dimension_range import DimensionSampler
+from hamingja_dungeon.areas.dungeon_area import DungeonArea
+from hamingja_dungeon.areas.exceptions import EmptyFitArea
+from hamingja_dungeon.areas.rooms.room import LRoom, Room
+from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import \
+    AbstractDungeonAreaDesigner
+from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import \
+    DungeonAreaConfig
+from hamingja_dungeon.tile_types import carpet
 
 
 class PrototypeDesigner(AbstractDungeonAreaDesigner):

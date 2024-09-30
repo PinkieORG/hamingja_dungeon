@@ -1,12 +1,6 @@
-from typing import Optional, Literal, Any, Tuple
+from typing import Any, Literal, Optional, Tuple
 
-from pydantic import (
-    BaseModel,
-    conint,
-    confloat,
-    field_validator,
-    model_validator,
-)
+from pydantic import (BaseModel, confloat, conint, field_validator, model_validator)
 
 
 def none_attribute(object: Any) -> Optional[str]:

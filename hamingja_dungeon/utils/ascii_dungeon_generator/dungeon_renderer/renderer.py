@@ -1,8 +1,8 @@
 import numpy as np
 from tcod.console import Console
 
-from areas.dungeon_object import DungeonObject
-from tile_types import bg
+from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.tile_types import bg
 
 
 class Renderer:
@@ -18,6 +18,6 @@ class Renderer:
         self.update()
         array = self.dungeon_object.mask
         tiles = self.dungeon_object.tiles
-        console.rgb[0:console.height, 0:console.width] = np.where(array,
-                                                                  tiles["dark"],
-                                                                  bg["dark"])
+        console.rgb[0 : console.height, 0 : console.width] = np.where(
+            array, tiles["dark"], bg["dark"]
+        )

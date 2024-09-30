@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
-from areas.dungeon_area import DungeonArea
-from dungeon_designers.config.dungeon_area_config import DungeonAreaConfig
+from hamingja_dungeon.areas.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
+    DungeonAreaConfig,
+)
 
 
 class AbstractDungeonAreaDesigner(ABC):

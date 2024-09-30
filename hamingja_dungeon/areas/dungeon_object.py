@@ -6,9 +6,9 @@ from typing import Tuple
 
 import numpy as np
 
-from areas.area import Area
-from areas.point import Point
-from tile_types import default, tile_dt
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.point import Point
+from hamingja_dungeon.tile_types import default, tile_dt
 
 
 @dataclass

@@ -2,9 +2,9 @@ import unittest
 
 import numpy as np
 
-from areas.area import Area
-from direction.direction import Direction
-from utils import print_test_areas, get_test_areas, print_name
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.direction.direction import Direction
+from test_utils import print_test_areas, get_test_areas, print_name
 
 
 class AreaPrintTests(unittest.TestCase):
@@ -36,11 +36,11 @@ class AreaPrintTests(unittest.TestCase):
         for name, area in areas.items():
             print_name(name)
             print("original: ")
-            area.print_area()
+            area.print()
             print("border (anchor): ")
-            area.border_of_thickness().print_area()
+            area.border_of_thickness().print()
             print("result: ")
-            area.fit_in(to_fit, area.border_of_thickness()).print_area()
+            area.fit_in(to_fit, area.border_of_thickness()).print()
 
     def test_fit_in_two_anchor(self):
         to_fit = Area.from_array(np.array([[1, 0], [1, 0], [1, 1]]))
@@ -49,8 +49,8 @@ class AreaPrintTests(unittest.TestCase):
         for name, area in areas.items():
             print_name(name)
             print("original: ")
-            area.print_area()
+            area.print()
             print("border (anchor): ")
-            area.border_of_thickness().print_area()
+            area.border_of_thickness().print()
             print("result: ")
-            area.fit_in(to_fit, area.border_of_thickness(), to_fit_anchor).print_area()
+            area.fit_in(to_fit, area.border_of_thickness(), to_fit_anchor).print()

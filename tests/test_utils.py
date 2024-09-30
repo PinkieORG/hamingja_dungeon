@@ -1,10 +1,12 @@
 import numpy as np
 from tcod import tcod
 
-from areas.area import Area
-from areas.dungeon_object import DungeonObject
-from dungeon_renderer.renderer import Renderer
-from tile_types import floor
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.tile_types import floor
+from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer import (
+    Renderer,
+)
 
 full_square = Area.from_array(
     np.array([[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
@@ -104,9 +106,9 @@ def print_test_areas(func, *args):
     for name, area in areas.items():
         print_name(name)
         print("original: ")
-        area.print_area()
+        area.print()
         print("result: ")
-        func(area, *args).print_area()
+        func(area, *args).print()
 
 
 def print_test_dungeon_objects(func, *args):
