@@ -3,8 +3,13 @@ import argparse
 import yaml
 from yaml import Loader
 
-from utils.ascii_dungeon_generator.ascii_dungeon_generator import ASCIIDungeonGenerator
-from utils.ascii_dungeon_generator.config.ascii_dungeon_config import ASCIIDungeonConfig
+from hamingja_dungeon.utils.ascii_dungeon_generator.config.ascii_dungeon_config import (
+    ASCIIDungeonConfig,
+)
+
+from hamingja_dungeon.utils.ascii_dungeon_generator.ascii_dungeon_generator import (
+    ASCIIDungeonGenerator,
+)
 
 
 def get_args():

@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from utils.graph.node import Node
+from hamingja_dungeon.utils.graph.node import Node
 
 
 class Graph:

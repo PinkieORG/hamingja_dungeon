@@ -2,12 +2,12 @@ from typing import Tuple
 
 import numpy as np
 
-import tile_types
-from areas.area import Area
-from areas.dimension_range import DimensionSampler
-from areas.dungeon_object import DungeonObject
-from areas.exceptions import EmptyFitArea
-from direction.direction import Direction
+from hamingja_dungeon import tile_types
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.dimension_range import DimensionSampler
+from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.areas.exceptions import EmptyFitArea
+from hamingja_dungeon.direction.direction import Direction
 
 ROOM_MIN_SIZE = (3, 3)
 

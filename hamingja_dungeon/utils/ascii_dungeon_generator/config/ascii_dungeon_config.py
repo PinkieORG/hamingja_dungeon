@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
-from dungeon_designers.config.dungeon_area_config import DungeonAreaConfig
+from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
+    DungeonAreaConfig,
+)
 
 
 class ASCIIDungeonConfig(BaseModel):

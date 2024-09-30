@@ -4,8 +4,8 @@ from enum import Enum
 import random
 from typing import Tuple
 
-from direction.connectivity import FOUR_CONNECTIVITY
-from direction.orientation import Orientation
+from hamingja_dungeon.direction.connectivity import FOUR_CONNECTIVITY
+from hamingja_dungeon.direction.orientation import Orientation
 
 
 class Direction(Enum):

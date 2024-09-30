@@ -2,8 +2,8 @@ from copy import deepcopy
 
 from scipy.ndimage import binary_hit_or_miss
 
-from areas.area import Area
-from areas.morphology.structure_elements import ENDPOINTS_4
+from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.morphology.structure_elements import ENDPOINTS_4
 
 
 def prune(area: Area, iterations: int = 1) -> Area:

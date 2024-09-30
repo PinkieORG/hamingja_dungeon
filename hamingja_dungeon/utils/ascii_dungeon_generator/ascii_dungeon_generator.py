@@ -1,10 +1,14 @@
 from tcod import tcod
 
-from areas.dungeon_area import DungeonArea
-from dungeon_designers.prototype_designer import PrototypeDesigner
-from utils.ascii_dungeon_generator.ascii_dungeon import ASCIIDungeon
-from utils.ascii_dungeon_generator.config.ascii_dungeon_config import ASCIIDungeonConfig
-from utils.ascii_dungeon_generator.dungeon_renderer.renderer import Renderer
+from hamingja_dungeon.areas.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_designers.prototype_designer import PrototypeDesigner
+from hamingja_dungeon.utils.ascii_dungeon_generator.ascii_dungeon import ASCIIDungeon
+from hamingja_dungeon.utils.ascii_dungeon_generator.config.ascii_dungeon_config import (
+    ASCIIDungeonConfig,
+)
+from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer import (
+    Renderer,
+)
 
 
 class ASCIIDungeonGenerator:

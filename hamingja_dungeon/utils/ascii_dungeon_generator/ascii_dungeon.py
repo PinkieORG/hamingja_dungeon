@@ -1,4 +1,3 @@
-
 class ASCIIDungeon:
     def __init__(self, content: str, name: str = "new_dungeon"):
         self.name = name
@@ -12,5 +11,4 @@ class ASCIIDungeon:
             f.write(self.content)
 
     def save(self, output_dir: str):
-        self.save_as(output_dir + '//' + self.name + '.txt')
-
+        self.save_as(output_dir + "//" + self.name + ".txt")
