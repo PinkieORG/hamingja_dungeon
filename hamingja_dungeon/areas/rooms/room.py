@@ -70,6 +70,7 @@ class LRoom(Room):
         origin = fit_area.sample()
         self.remove_area(origin, filling)
         self.draw_border(border_fill_value)
+        self.room_anchor = self.connected_border()
 
 
 class CircleRoom(Room):
