@@ -40,7 +40,7 @@ class DungeonArea(DungeonObject):
         anchor = Area.empty_area(self.size).insert_area(
             neighbour.origin, neighbour.object.room_anchor
         )
-        without_children = (~self.children_area()).insert_area(
+        without_children = (~self.child_area()).insert_area(
             neighbour.origin, neighbour.object.border()
         )
         return without_children.fit_in(

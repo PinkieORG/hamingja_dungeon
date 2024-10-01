@@ -47,10 +47,13 @@ class DungeonObject(Area):
     def tiles(self) -> np.ndarray:
         return self._tiles
 
-    def fullness(self) -> float:
-        return self.children_area().volume() / self.volume()
+    def in_childless_area(self, p: Vector) -> bool:
+        return self.childless_area().is_inside_area(p)
 
-    def children_area(self) -> Area:
+    def fullness(self) -> float:
+        return self.child_area().volume() / self.volume()
+
+    def child_area(self) -> Area:
         """Returns a combined area of the children."""
         result = Area.empty_area(self.size)
         for child in self.children.values():
@@ -66,9 +69,9 @@ class DungeonObject(Area):
     def childless_area(self) -> Area:
         """Returns an area with the children removed."""
         result = Area.from_array(self.mask)
-        return result & ~self.children_area()
+        return result & ~self.child_area()
 
-    def inside_area(self) -> Area:
+    def inner_area(self) -> Area:
         """Returns an area without the border."""
         return Area.from_array(self.mask) - self.border()
 
@@ -97,7 +100,7 @@ class DungeonObject(Area):
         """Will draw the inside with the given value."""
         if value.dtype != tile_dt:
             raise ValueError("fill_value needs to have the tile dtype.")
-        self.draw(value, mask=self.inside_area())
+        self.draw(value, mask=self.inner_area())
 
     def draw_dungeon_object(self, p: Vector, dungeon_object: DungeonObject) -> None:
         """Will draw another dungeon object with respect to its mask. If it

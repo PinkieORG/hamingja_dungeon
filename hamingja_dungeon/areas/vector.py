@@ -8,14 +8,24 @@ class Vector:
         self.y = y
         self.x = x
 
-    def __eq__(self, other):
+    def __eq__(self, other: Vector) -> bool:
         return self.x == other.x and self.y == other.y
 
-    def __add__(self, other: Vector):
+    def __add__(self, other: Vector) -> Vector:
         return Vector(self.y + other.y, self.x + other.x)
 
-    def __sub__(self, other: Vector):
+    def __iadd__(self, other: Vector) -> Vector:
+        self.y += other.y
+        self.x += other.x
+        return self
+
+    def __sub__(self, other: Vector) -> Vector:
         return Vector(self.y - other.y, self.x - other.x)
+
+    def __isub__(self, other: Vector) -> Vector:
+        self.y -= other.y
+        self.x -= other.x
+        return self
 
     def is_positive(self):
         return self.x >= 0 and self.y >= 0
