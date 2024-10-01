@@ -191,7 +191,7 @@ class Area:
         self._set_mask_values(origin, to_remove, False)
         return self
 
-    def border_of_thickness(self, thickness: int = 1) -> Area:
+    def border(self, thickness: int = 1) -> Area:
         """Returns a border of the given thickness."""
         if thickness < 0:
             raise ValueError("Thickness cannot be negative.")
@@ -232,7 +232,7 @@ class Area:
 
     def connected_border(self) -> Area:
         """Returns a border without the area's outside corners."""
-        return self.border_of_thickness() - self.corners()
+        return self.border() - self.corners()
 
     def sample(self) -> Vector:
         """Samples and returns a position of a true value within the area."""

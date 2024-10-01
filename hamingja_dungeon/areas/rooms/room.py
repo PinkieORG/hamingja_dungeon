@@ -10,6 +10,7 @@ from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
 from hamingja_dungeon.areas.morphology.morphology import prune
 from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.tile_types import tile_dt
 from hamingja_dungeon.utils.utils import circle_mask
 
 ROOM_MIN_SIZE = (3, 3)
@@ -20,19 +21,19 @@ class Room(DungeonObject):
             self,
             size: Tuple[int, int],
             fill_value: np.ndarray = None,
-            border_thickness: int = 1,
-            border_fill_value: np.ndarray = None,
+            border_fill_value: np.ndarray = None
     ):
         if fill_value is None:
             fill_value = tile_types.floor
         if border_fill_value is None:
             border_fill_value = tile_types.wall
+        if fill_value.dtype != tile_dt or border_fill_value.dtype != tile_dt:
+            raise ValueError("Fill value has to have the tile dtype.")
         super().__init__(
             (max(size[0], ROOM_MIN_SIZE[0]), max(size[1], ROOM_MIN_SIZE[1])),
             fill_value=fill_value,
-            border_thickness=border_thickness,
-            border_fill_value=border_fill_value,
         )
+        self.draw_border(border_fill_value)
         self.room_anchor = self.connected_border()
 
 
@@ -41,7 +42,6 @@ class LRoom(Room):
             self,
             size: Tuple[int, int],
             fill_value: np.ndarray = None,
-            border_thickness: int = 1,
             border_fill_value: np.ndarray = None,
             direction: Direction = None,
     ):
@@ -52,7 +52,6 @@ class LRoom(Room):
         super().__init__(
             size,
             fill_value=fill_value,
-            border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
         dim_range = DimensionSampler(
@@ -79,7 +78,6 @@ class CircleRoom(Room):
             self,
             dim: int,
             fill_value: np.ndarray = None,
-            border_thickness: int = 1,
             border_fill_value: np.ndarray = None,
     ):
         if border_fill_value is None:
@@ -90,7 +88,6 @@ class CircleRoom(Room):
         super().__init__(
             (dim, dim),
             fill_value=fill_value,
-            border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
         self.mask = circle_mask(dim)

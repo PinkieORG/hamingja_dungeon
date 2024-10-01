@@ -29,13 +29,6 @@ class DungeonArea(DungeonObject):
         neighbour = self.get_child(neighbour_id)
         if not isinstance(neighbour.object, Room):
             raise ValueError("The neighbour of the object has to be a room.")
-        if to_fit.border_thickness == 0 or neighbour.object.border_thickness == 0:
-            raise ValueError(
-                "Both the new object and the neighbour have to have a positive border"
-                " thickness."
-            )
-        if to_fit.border_thickness > 1 or neighbour.object.border_thickness > 1:
-            raise NotImplemented
 
         anchor = Area.empty_area(self.size).insert_area(
             neighbour.origin, neighbour.object.room_anchor
