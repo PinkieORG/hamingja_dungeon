@@ -2,6 +2,7 @@ import numpy as np
 from tcod import tcod
 
 from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.dungeon_area import DungeonArea
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.tile_types import floor
 from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer import (
@@ -75,6 +76,26 @@ hole_shape = Area.from_array(
     )
 )
 
+big_area = Area.from_array(
+    np.array(
+        [
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+    )
+)
+
 
 def get_test_areas() -> dict:
     return {
@@ -93,6 +114,12 @@ def get_test_dungeon_objects() -> dict[str, DungeonObject]:
         dungeon_object.mask = area.mask
         result[name] = dungeon_object
     return result
+
+
+def get_test_dungeon_area() -> DungeonArea:
+    dungeon_area = DungeonArea(big_area.size, fill_value=floor)
+    dungeon_area.mask = big_area.mask
+    return dungeon_area
 
 
 def print_name(name: str) -> None:
