@@ -155,7 +155,7 @@ class Area:
         return np.count_nonzero(self.mask)
 
     def print(self) -> None:
-        """Convenient print"""
+        """Convenient print."""
         image = np.where(self._mask, "■", "□")
         print(image)
 
@@ -163,7 +163,7 @@ class Area:
         """Checks whether a point is inside the bounding box of the area."""
         return 0 <= p.y < self.h and 0 <= p.x < self.w
 
-    def inside(self, p: Vector) -> bool:
+    def is_inside_area(self, p: Vector) -> bool:
         """Checks whether a point is inside the area."""
         if not self.inside_bbox(p):
             return False
@@ -175,6 +175,7 @@ class Area:
             return False
         return np.all(other.mask & self.mask == self.mask)
 
+    # TODO rename this
     def is_empty(self):
         """Return true if there are no true elements"""
         return not np.any(self.mask)

@@ -4,42 +4,37 @@ from enum import Enum
 import random
 from typing import Tuple
 
-from hamingja_dungeon.direction.connectivity import FOUR_CONNECTIVITY
-from hamingja_dungeon.direction.orientation import Orientation
+from hamingja_dungeon.areas.vector import Vector
+
+UNIT_VECTORS = [Vector(-1, 0), Vector(0, 1), Vector(1, 0), Vector(0, -1)]
 
 
 class Direction(Enum):
+    """Utility class representing a direction."""
     NORTH = 0
     EAST = 1
     SOUTH = 2
     WEST = 3
 
-    def __add__(self, other: Direction) -> Direction:
-        result = (self.value + other.value) % 4
-        return Direction(result)
+    def unit_vector(self) -> Vector:
+        return UNIT_VECTORS[self.value]
 
-    def coordinates(self):
-        return FOUR_CONNECTIVITY[self.value]
-
-    def get_orientation(self) -> Orientation:
-        return Orientation(self.value % 2)
-
-    def is_vertical(self):
+    def is_vertical(self) -> bool:
         return self.value % 2 == 0
 
     def get_opposite(self) -> Direction:
         result = (self.value + 2) % 4
         return Direction(result)
 
-    def is_neighbour(self, other: Direction) -> bool:
+    def is_orthogonal_to(self, other: Direction) -> bool:
         return ((self.value + 1) % 4 == other.value) or (
             (self.value - 1) % 4 == other.value
         )
 
-    def get_clockwise_neighbour(self):
+    def right(self) -> Direction:
         return Direction((self.value + 1) % 4)
 
-    def get_counterclockwise_neighbour(self):
+    def left(self) -> Direction:
         return Direction((self.value - 1) % 4)
 
     @staticmethod
@@ -49,7 +44,3 @@ class Direction(Enum):
     @staticmethod
     def get_all_directions() -> Tuple:
         return Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST
-
-    @staticmethod
-    def is_horizontal(direction: Direction) -> bool:
-        return direction.value % 2 == 1
