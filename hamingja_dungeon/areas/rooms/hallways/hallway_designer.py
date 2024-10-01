@@ -12,12 +12,13 @@ from hamingja_dungeon.areas.rooms.hallways.hallway_action import (
     HallwayAction,
     get_all_actions,
 )
-from hamingja_dungeon.areas.rooms.hallways.hallway_action_manager import (
-    CannotPerformAction,
-)
 from hamingja_dungeon.areas.vector import Vector
 from hamingja_dungeon.areas.rooms.hallways.hallway import Hallway
 from hamingja_dungeon.direction.direction import Direction
+
+
+class CannotPerformAction(Exception):
+    pass
 
 
 class HallwayDesigner:
