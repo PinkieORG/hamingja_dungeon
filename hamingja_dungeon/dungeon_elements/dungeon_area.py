@@ -1,15 +1,10 @@
 from __future__ import annotations
-
 from typing import Tuple
-
 import numpy as np
-
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.utils.area import Area
 from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
-
-from hamingja_dungeon.hallway_designers.hallway_designer import HallwayDesigner
 from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.dungeon_elements.room import Room
 
@@ -76,15 +71,18 @@ class DungeonArea(DungeonObject):
         first_object = first.object
         second = self.get_child(second_id)
         second_object = second.object
+        if not isinstance(first_object, Room) or not isinstance(second_object, Room):
+            raise ValueError("Can make entrances only between rooms.")
+
         border_intersection = self.intersection(
             first.origin,
-            first_object.connected_border(),
+            first_object.room_anchor,
             second.origin,
-            second_object.connected_border(),
+            second_object.room_anchor,
         )
         if border_intersection.is_empty():
             raise EmptyFitArea(
-                "Cannot make entrance between two rooms that do " "not share a border."
+                "Cannot make entrance between two rooms that do not share a border."
             )
         # TODO support entrances of larger size.
         entrance_point = border_intersection.sample()
