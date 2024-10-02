@@ -157,10 +157,18 @@ class HallwayDesigner:
     ) -> None:
         """Initializes all the parameters used during the drawing and hallway creation
         stage."""
-        self.points.append(start_point)
-        self.direction = random.choice(possible_direction)
-        self.length = 1
-        self.head_point = start_point
+        directions = []
+        for direction in possible_direction:
+            head_point = start_point + direction.unit_vector()
+            if self.valid_head(head_point, direction):
+                directions.append(direction)
+        if len(directions) == 0:
+            raise DesignerError()
+        initial_direction = random.choice(directions)
+        self.head_point = start_point + initial_direction.unit_vector()
+        self.points.append(self.head_point)
+        self.direction = initial_direction
+        self.length = 3
 
     def _reset(self) -> None:
         """Resets all the parameters used during the drawing and hallway creation
