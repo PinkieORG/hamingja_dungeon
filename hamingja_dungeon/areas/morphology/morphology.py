@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 from scipy.ndimage import binary_hit_or_miss
 
-from hamingja_dungeon.areas.morphology.structure_elements import ENDPOINTS_4
+from hamingja_dungeon.areas.morphology.structure_elements import ENDPOINTS
 
 
 def prune(array: np.array, iterations: int = 1) -> np.array:
@@ -13,13 +13,19 @@ def prune(array: np.array, iterations: int = 1) -> np.array:
 
     result = deepcopy(array)
     for _ in range(iterations):
-        endpoints = np.zeros(array.shape).astype(bool)
-        for structure in ENDPOINTS_4.values():
-            endpoints = endpoints | binary_hit_or_miss(
-                result,
-                structure1=structure.hit,
-                structure2=structure.miss,
-                origin1=structure.origin,
-            )
+        endpoints = get_endpoints(result)
         result ^= endpoints
+    return result
+
+
+def get_endpoints(array: np.array) -> np.array:
+    """Returns all endpoints of an array"""
+    result = np.zeros(array.shape).astype(bool)
+    for structure in ENDPOINTS.values():
+        result = result | binary_hit_or_miss(
+            array,
+            structure1=structure.hit,
+            structure2=structure.miss,
+            origin1=structure.origin,
+        )
     return result

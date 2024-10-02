@@ -7,6 +7,8 @@ from hamingja_dungeon.direction.direction import Direction
 
 SQUARE = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
 
+PLUS = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+
 HORIZONTAL = np.array([[1, 1]])
 
 VERTICAL = np.array([[1], [1]])
@@ -28,7 +30,7 @@ class HoMStructure:
     origin: Tuple[int, int]
 
 
-ENDPOINTS_4 = {
+ENDPOINTS = {
     Direction.NORTH: HoMStructure(
         hit=np.array([[0, 0, 0], [0, 1, 0]]),
         miss=np.array([[0, 1, 0], [1, 0, 1]]),
