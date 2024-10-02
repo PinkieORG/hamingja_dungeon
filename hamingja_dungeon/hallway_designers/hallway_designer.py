@@ -1,22 +1,23 @@
 from __future__ import annotations
-
-
 import random
 from dataclasses import dataclass
 from typing import List, Tuple
-
 import numpy as np
-
 from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
-from hamingja_dungeon.hallway_designers.hallway_action import HallwayAction, \
-    get_all_actions
-
+from hamingja_dungeon.hallway_designers.hallway_action import (
+    HallwayAction,
+    get_all_actions,
+)
 from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.dungeon_elements.hallway import Hallway
 from hamingja_dungeon.utils.direction import Direction
 
 
 class CannotPerformAction(Exception):
+    pass
+
+
+class DesignerError(Exception):
     pass
 
 
@@ -51,7 +52,7 @@ class HallwayDesigner:
         self._reset()
 
         # hardcoded to config in the future
-        self.max_length = 20
+        self.max_length = 30
         self.actions = {
             "move_forward": self.Action(
                 object=all_actions.get("move_forward"),
@@ -75,6 +76,27 @@ class HallwayDesigner:
                 cooldown=2,
             ),
         }
+
+    def valid_head(self, head: Vector, direction: Direction) -> bool:
+        """Checks if the new head of the drawing process is valid; i.e. it's inside
+        the area, it doesn't collide with itself e.g."""
+        neighbours = head.neighbours()
+        for neighbour in neighbours:
+            if not self.dungeon_area.is_inside_area(neighbour):
+                return False
+        # TODO childless area without child borders in the future.
+        if not self.dungeon_area.in_childless_area(head):
+            return False
+        if head in self.points:
+            return False
+        front = head + direction.unit_vector()
+        front_left = front + direction.left().unit_vector()
+        front_right = front + direction.right().unit_vector()
+        front_neighbours = [front, front_left, front_right]
+        for front_neighbour in front_neighbours:
+            if front_neighbour in self.points:
+                return False
+        return True
 
     def _get_possible_actions(self) -> list[Action]:
         """Get a list of actions that are not on cooldown and their condition are
@@ -162,5 +184,6 @@ class HallwayDesigner:
             except CannotPerformAction:
                 break
         origin, hallway = self._create_hallway()
+        print(self.length)
         self._reset()
         return origin, hallway
