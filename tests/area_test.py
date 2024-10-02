@@ -26,6 +26,10 @@ class AreaPrintTests(unittest.TestCase):
         print("corners test:")
         print_test_areas(Area.corners)
 
+    def test_outside_corners(self):
+        print("corners test:")
+        print_test_areas(Area.outside_corners)
+
     def test_fit_in(self):
         to_fit = Area.from_array(np.array([[1, 1], [1, 1], [1, 1]]))
         print_test_areas(Area.fit_in, to_fit)

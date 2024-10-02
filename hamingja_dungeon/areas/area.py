@@ -8,10 +8,10 @@ import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
 from hamingja_dungeon.areas.morphology.structure_elements import (
-    SQUARE,
+    OUTSIDE_CORNERS, SQUARE,
     HORIZONTAL,
     VERTICAL,
-    CORNERS,
+    INSIDE_CORNERS,
 )
 from hamingja_dungeon.areas.vector import Vector
 from hamingja_dungeon.direction.direction import Direction
@@ -227,10 +227,25 @@ class Area:
     def corners_in_direction(self, direction: Direction) -> Area:
         """Returns all the corners in a given direction. The given direction and
         its clockwise neighbour specifies the corner orientation."""
-        corner = CORNERS.get(direction)
+        corner = INSIDE_CORNERS.get(direction)
         return Area.from_array(
             binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
         )
+
+    def outside_corners_in_direction(self, direction: Direction) -> Area:
+        """Returns all the outside corners in a given direction. The given direction and
+        its clockwise neighbour specifies the corner orientation."""
+        corner = OUTSIDE_CORNERS.get(direction)
+        return Area.from_array(
+            binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
+        )
+
+    def outside_corners(self) -> Area:
+        """Returns all the outside corners."""
+        result = Area.empty_area(self.size)
+        for dir in Direction.get_all_directions():
+            result |= self.outside_corners_in_direction(dir)
+        return result
 
     def connected_border(self) -> Area:
         """Returns a border without the area's outside corners."""
