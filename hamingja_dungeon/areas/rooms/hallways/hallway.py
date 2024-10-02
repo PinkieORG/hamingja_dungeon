@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+
 import numpy as np
 from scipy.ndimage import binary_dilation
 
 from hamingja_dungeon.areas.area import Area
+from hamingja_dungeon.areas.morphology.morphology import get_endpoints
+from hamingja_dungeon.areas.morphology.structure_elements import PLUS
 from hamingja_dungeon.areas.rooms.room import Room
 from hamingja_dungeon.tile_types import wall
 
 
 class Hallway(Room):
     """Represents a hallway: a path-like room surrounded by walls."""
+
     def __init__(
         self,
         path: np.array,
@@ -29,3 +33,8 @@ class Hallway(Room):
         self.mask = with_border
         self.hallway_border = Area.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
+
+        endpoints = get_endpoints(borderless)
+        self.room_anchor = (
+            binary_dilation(endpoints, structure=PLUS) & self.hallway_border.mask
+        )
