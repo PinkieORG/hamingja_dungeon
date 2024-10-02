@@ -1,12 +1,9 @@
 from __future__ import annotations
-
-
 import numpy as np
 from scipy.ndimage import binary_dilation
-
 from hamingja_dungeon.utils.area import Area
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
-from hamingja_dungeon.utils.morphology.structure_elements import PLUS
+from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
 from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
 
@@ -28,8 +25,7 @@ class Hallway(Room):
         )
         borderless = np.zeros(new_size).astype(bool)
         borderless[1:-1, 1:-1] = path
-        with_border = binary_dilation(borderless)
-
+        with_border = binary_dilation(borderless, structure=SQUARE)
         self.mask = with_border
         self.hallway_border = Area.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
