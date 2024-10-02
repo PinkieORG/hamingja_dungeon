@@ -1,13 +1,12 @@
+from __future__ import annotations
 from typing import Tuple
-
 import numpy as np
-
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
-from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.point import Point
-from hamingja_dungeon.areas.rooms.room import Room
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.exceptions import EmptyFitArea
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.dungeon_elements.room import Room
 
 
 class DungeonArea(DungeonObject):
@@ -29,25 +28,18 @@ class DungeonArea(DungeonObject):
         neighbour = self.get_child(neighbour_id)
         if not isinstance(neighbour.object, Room):
             raise ValueError("The neighbour of the object has to be a room.")
-        if to_fit.border_thickness == 0 or neighbour.object.border_thickness == 0:
-            raise ValueError(
-                "Both the new object and the neighbour have to have a positive border"
-                " thickness."
-            )
-        if to_fit.border_thickness > 1 or neighbour.object.border_thickness > 1:
-            raise NotImplemented
 
         anchor = Area.empty_area(self.size).insert_area(
             neighbour.origin, neighbour.object.room_anchor
         )
-        without_children = (~self.children_area()).insert_area(
+        without_children = (~self.child_area()).insert_area(
             neighbour.origin, neighbour.object.border()
         )
         return without_children.fit_in(
             to_fit, anchor=anchor, to_fit_anchor=to_fit.room_anchor
         )
 
-    def add_room(self, origin: Point, room: Room) -> int:
+    def add_room(self, origin: Vector, room: Room) -> int:
         """Adds a new room at the given origin. Returns its new id."""
         id = self.add_child(origin, room)
         # self.room_graph.push(id)
@@ -66,6 +58,9 @@ class DungeonArea(DungeonObject):
     def make_entrance(
         self, first_id: int, second_id: int, fill_value: np.ndarray = None
     ) -> None:
+        """Make entrance between two already placed room given by their ids. The
+        entrance will be a new child inserted into both room and will have the given
+        fill value."""
         if fill_value is None:
             fill_value = tile_types.floor
         if fill_value.dtype != tile_types.tile_dt:
@@ -76,15 +71,18 @@ class DungeonArea(DungeonObject):
         first_object = first.object
         second = self.get_child(second_id)
         second_object = second.object
+        if not isinstance(first_object, Room) or not isinstance(second_object, Room):
+            raise ValueError("Can make entrances only between rooms.")
+
         border_intersection = self.intersection(
             first.origin,
-            first_object.connected_border(),
+            first_object.room_anchor,
             second.origin,
-            second_object.connected_border(),
+            second_object.room_anchor,
         )
         if border_intersection.is_empty():
             raise EmptyFitArea(
-                "Cannot make entrance between two rooms that do " "not share a border."
+                "Cannot make entrance between two rooms that do not share a border."
             )
         # TODO support entrances of larger size.
         entrance_point = border_intersection.sample()

@@ -5,9 +5,7 @@ from typing import Tuple
 
 
 class DimensionSampler:
-    """
-    Can be sampled randomly according to minimum and maximum dimensions.
-    """
+    """Can be sampled randomly according to minimum and maximum dimensions."""
 
     def __init__(self, dim_range: Tuple[int, int, int, int]):
         min_h, max_h, min_w, max_w = dim_range
@@ -33,12 +31,10 @@ class DimensionSampler:
     def as_factor(
         size: Tuple, size_factors: Tuple[float, float, float, float]
     ) -> DimensionSampler:
-        """
-        Creates a new DimensionRange. Its min/max height will be calculated by
+        """Creates a new DimensionRange. Its min/max height will be calculated by
         multiplying the first two numbers in size_factors by the given height.
         Same for width with second two numbers in size_factors. The resulting
-        minimum dimensions are rounded to 1 if less than 1.
-        """
+        minimum dimensions are rounded to 1 if less than 1."""
         for dim in size_factors:
             if dim <= 0 or dim > 1:
                 raise ValueError(
@@ -59,12 +55,14 @@ class DimensionSampler:
         return DimensionSampler((min_h, max_h, min_w, max_w))
 
     @staticmethod
-    def fixed(dimension: Tuple[int, int]):
+    def fixed(dimension: Tuple[int, int]) -> DimensionSampler:
+        """Creates a new DimensionRange. It will sample a one given dimension."""
         return DimensionSampler(
             (dimension[0], dimension[0], dimension[1], dimension[1])
         )
 
     def sample(self) -> Tuple[int, int]:
+        """Randomly choose a new dimension."""
         if self.min_h == self.max_h:
             h = self.min_h
         else:

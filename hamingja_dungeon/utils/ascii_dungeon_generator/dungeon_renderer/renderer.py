@@ -1,7 +1,7 @@
 import numpy as np
 from tcod.console import Console
 
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
 from hamingja_dungeon.tile_types import bg
 
 

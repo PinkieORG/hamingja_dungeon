@@ -4,46 +4,48 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dimension_range import DimensionSampler
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
-from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.morphology.morphology import prune
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.exceptions import EmptyFitArea
+from hamingja_dungeon.utils.morphology.morphology import prune
+from hamingja_dungeon.utils.direction import Direction
+from hamingja_dungeon.tile_types import tile_dt
 from hamingja_dungeon.utils.utils import circle_mask
 
 ROOM_MIN_SIZE = (3, 3)
 
 
 class Room(DungeonObject):
+    """Represent a room that can be inserted into dungeon area."""
+
     def __init__(
-            self,
-            size: Tuple[int, int],
-            fill_value: np.ndarray = None,
-            border_thickness: int = 1,
-            border_fill_value: np.ndarray = None,
+        self,
+        size: Tuple[int, int],
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
     ):
         if fill_value is None:
             fill_value = tile_types.floor
         if border_fill_value is None:
             border_fill_value = tile_types.wall
+        if fill_value.dtype != tile_dt or border_fill_value.dtype != tile_dt:
+            raise ValueError("Fill value has to have the tile dtype.")
         super().__init__(
             (max(size[0], ROOM_MIN_SIZE[0]), max(size[1], ROOM_MIN_SIZE[1])),
             fill_value=fill_value,
-            border_thickness=border_thickness,
-            border_fill_value=border_fill_value,
         )
+        self.draw_border(border_fill_value)
         self.room_anchor = self.connected_border()
 
 
 class LRoom(Room):
     def __init__(
-            self,
-            size: Tuple[int, int],
-            fill_value: np.ndarray = None,
-            border_thickness: int = 1,
-            border_fill_value: np.ndarray = None,
-            direction: Direction = None,
+        self,
+        size: Tuple[int, int],
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
+        direction: Direction = None,
     ):
         if direction is None:
             direction = Direction.get_random_direction()
@@ -52,12 +54,11 @@ class LRoom(Room):
         super().__init__(
             size,
             fill_value=fill_value,
-            border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
         dim_range = DimensionSampler(
             (
-                int(self.h / 2.5),
+                int(self.h // 2.5),
                 int(self.h // 1.5),
                 int(self.w // 2.5),
                 int(self.w // 1.5),
@@ -76,11 +77,10 @@ class LRoom(Room):
 
 class CircleRoom(Room):
     def __init__(
-            self,
-            dim: int,
-            fill_value: np.ndarray = None,
-            border_thickness: int = 1,
-            border_fill_value: np.ndarray = None,
+        self,
+        dim: int,
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
     ):
         if border_fill_value is None:
             border_fill_value = tile_types.wall
@@ -90,7 +90,6 @@ class CircleRoom(Room):
         super().__init__(
             (dim, dim),
             fill_value=fill_value,
-            border_thickness=border_thickness,
             border_fill_value=border_fill_value,
         )
         self.mask = circle_mask(dim)

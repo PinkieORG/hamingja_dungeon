@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from hamingja_dungeon.areas.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
     DungeonAreaConfig,
 )

@@ -7,14 +7,14 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
-from hamingja_dungeon.areas.morphology.structure_elements import (
-    SQUARE,
+from hamingja_dungeon.utils.morphology.structure_elements import (
+    OUTSIDE_CORNERS, SQUARE,
     HORIZONTAL,
     VERTICAL,
-    CORNERS,
+    INSIDE_CORNERS,
 )
-from hamingja_dungeon.areas.point import Point
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.utils.direction import Direction
 
 
 class Area:
@@ -25,7 +25,7 @@ class Area:
             raise ValueError("The size has to be positive.")
         self._mask = np.full(size, fill_value=True, dtype=np.bool)
 
-    def _set_mask_values(self, origin: Point, mask: Area, set_to: bool) -> None:
+    def _set_mask_values(self, origin: Vector, mask: Area, set_to: bool) -> None:
         """Sets values defined by the true values of the new mask inserted to
         the given origin."""
         if not origin.is_positive():
@@ -52,6 +52,7 @@ class Area:
 
     @staticmethod
     def empty_area(size: Tuple[int, int]) -> Area:
+        """Creates an empty area of the given size."""
         area = Area(size)
         area.mask.fill(False)
         return area
@@ -134,12 +135,13 @@ class Area:
 
     def intersection(
         self,
-        origin_first: Point,
+        origin_first: Vector,
         first: Area,
-        origin_second: Point,
+        origin_second: Vector,
         second: Area,
     ) -> Area:
-        """Returns an intersection of two areas."""
+        """Returns an intersection of two areas as if they have been placed according
+        to the given origins."""
         if not origin_first.is_positive() or not origin_second.is_positive():
             raise ValueError("The origin of the area has to be positive.")
         first_larger = Area.empty_area(self.size)
@@ -155,15 +157,15 @@ class Area:
         return np.count_nonzero(self.mask)
 
     def print(self) -> None:
-        """Convenient print"""
+        """Convenient print."""
         image = np.where(self._mask, "■", "□")
         print(image)
 
-    def inside_bbox(self, p: Point) -> bool:
+    def inside_bbox(self, p: Vector) -> bool:
         """Checks whether a point is inside the bounding box of the area."""
         return 0 <= p.y < self.h and 0 <= p.x < self.w
 
-    def inside(self, p: Point) -> bool:
+    def is_inside_area(self, p: Vector) -> bool:
         """Checks whether a point is inside the area."""
         if not self.inside_bbox(p):
             return False
@@ -175,34 +177,34 @@ class Area:
             return False
         return np.all(other.mask & self.mask == self.mask)
 
-    def is_empty(self):
+    # TODO rename this
+    def is_empty(self) -> bool:
         """Return true if there are no true elements"""
         return not np.any(self.mask)
 
-    def insert_area(self, origin: Point, to_put: Area) -> Area:
+    def insert_area(self, origin: Vector, to_put: Area) -> Area:
         """Inserts another area inside with respect to its origin and mask."""
         self._set_mask_values(origin, to_put, True)
         return self
 
-    def remove_area(self, origin: Point, to_remove: Area) -> Area:
+    def remove_area(self, origin: Vector, to_remove: Area) -> Area:
         """Removes another area defined by its true values with respect to its
         origin."""
         self._set_mask_values(origin, to_remove, False)
         return self
 
-    def border_of_thickness(self, thickness: int = 1) -> Area:
-        """Returns a border of the given thickness."""
+    def border(self, thickness: int = 1, direction: Direction = None) -> Area:
+        """Returns a border of the given thickness in the given direction.
+        Border in all direction will be returned if direction is None."""
         if thickness < 0:
             raise ValueError("Thickness cannot be negative.")
         if thickness == 0:
             return Area.empty_area(self.size)
-        return Area.from_array(
-            self.mask
-            & ~binary_erosion(self.mask, structure=SQUARE, iterations=thickness)
-        )
-
-    def border_in_direction(self, direction: Direction) -> Area:
-        """Returns a border in the specific direction."""
+        if direction is None:
+            return Area.from_array(
+                self.mask
+                & ~binary_erosion(self.mask, structure=SQUARE, iterations=thickness)
+            )
         structure = VERTICAL if direction.is_vertical() else HORIZONTAL
         if direction == direction.EAST:
             origin = (0, -1)
@@ -224,21 +226,36 @@ class Area:
     def corners_in_direction(self, direction: Direction) -> Area:
         """Returns all the corners in a given direction. The given direction and
         its clockwise neighbour specifies the corner orientation."""
-        corner = CORNERS.get(direction)
+        corner = INSIDE_CORNERS.get(direction)
         return Area.from_array(
             binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
         )
 
+    def outside_corners_in_direction(self, direction: Direction) -> Area:
+        """Returns all the outside corners in a given direction. The given direction and
+        its clockwise neighbour specifies the corner orientation."""
+        corner = OUTSIDE_CORNERS.get(direction)
+        return Area.from_array(
+            binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
+        )
+
+    def outside_corners(self) -> Area:
+        """Returns all the outside corners."""
+        result = Area.empty_area(self.size)
+        for dir in Direction.get_all_directions():
+            result |= self.outside_corners_in_direction(dir)
+        return result
+
     def connected_border(self) -> Area:
         """Returns a border without the area's outside corners."""
-        return self.border_of_thickness() - self.corners()
+        return self.border() - self.corners() - self.outside_corners()
 
-    def sample(self) -> Point:
+    def sample(self) -> Vector:
         """Samples and returns a position of a true value within the area."""
         if self.is_empty():
             raise ValueError("Cannot sample from an empty area.")
         sample = random.choice(np.argwhere(self.mask))
-        return Point(sample[0], sample[1])
+        return Vector(sample[0], sample[1])
 
     def fit_in(
         self, to_fit: Area, anchor: Area = None, to_fit_anchor: Area = None
