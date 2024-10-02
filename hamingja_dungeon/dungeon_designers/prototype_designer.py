@@ -1,9 +1,9 @@
 import random
 
-from hamingja_dungeon.areas.dimension_sampler import DimensionSampler
-from hamingja_dungeon.areas.dungeon_area import DungeonArea
-from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.rooms.room import CircleRoom, LRoom, Room
+from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
+from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.utils.exceptions import EmptyFitArea
+from hamingja_dungeon.dungeon_elements.room import CircleRoom, LRoom, Room
 from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import (
     AbstractDungeonAreaDesigner,
 )

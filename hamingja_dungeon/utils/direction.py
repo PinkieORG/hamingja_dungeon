@@ -4,7 +4,7 @@ from enum import Enum
 import random
 from typing import Tuple
 
-from hamingja_dungeon.areas.vector import Vector
+from hamingja_dungeon.utils.vector import Vector
 
 UNIT_VECTORS = [Vector(-1, 0), Vector(0, 1), Vector(1, 0), Vector(0, -1)]
 

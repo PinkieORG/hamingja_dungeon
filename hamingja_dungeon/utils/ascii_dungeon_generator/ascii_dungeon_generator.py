@@ -1,6 +1,6 @@
 from tcod import tcod
 
-from hamingja_dungeon.areas.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
 from hamingja_dungeon.dungeon_designers.prototype_designer import PrototypeDesigner
 from hamingja_dungeon.utils.ascii_dungeon_generator.ascii_dungeon import ASCIIDungeon
 from hamingja_dungeon.utils.ascii_dungeon_generator.config.ascii_dungeon_config import (

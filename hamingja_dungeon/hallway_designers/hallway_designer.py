@@ -7,14 +7,13 @@ from typing import List, Tuple
 
 import numpy as np
 
-from hamingja_dungeon.areas.dungeon_area import DungeonArea
-from hamingja_dungeon.areas.rooms.hallways.hallway_action import (
-    HallwayAction,
-    get_all_actions,
-)
-from hamingja_dungeon.areas.vector import Vector
-from hamingja_dungeon.areas.rooms.hallways.hallway import Hallway
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.hallway_designers.hallway_action import HallwayAction, \
+    get_all_actions
+
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.dungeon_elements.hallway import Hallway
+from hamingja_dungeon.utils.direction import Direction
 
 
 class CannotPerformAction(Exception):

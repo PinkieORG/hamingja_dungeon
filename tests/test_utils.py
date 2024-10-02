@@ -1,9 +1,9 @@
 import numpy as np
 from tcod import tcod
 
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dungeon_area import DungeonArea
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
 from hamingja_dungeon.tile_types import floor
 from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer import (
     Renderer,

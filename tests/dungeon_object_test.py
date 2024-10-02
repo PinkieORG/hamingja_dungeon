@@ -3,8 +3,8 @@ import unittest
 import numpy as np
 from scipy.ndimage import binary_dilation
 
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
-from hamingja_dungeon.areas.vector import Vector
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.tile_types import carpet, column, wall
 from test_utils import (
     get_test_dungeon_objects,

@@ -6,8 +6,8 @@ from typing import Tuple
 
 import numpy as np
 
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.vector import Vector
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.tile_types import default, tile_dt
 
 

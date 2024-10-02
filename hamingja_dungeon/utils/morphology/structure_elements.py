@@ -3,7 +3,7 @@ from typing import Tuple
 
 import numpy as np
 
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.direction import Direction
 
 SQUARE = np.array(
     [

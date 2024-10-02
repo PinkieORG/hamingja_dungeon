@@ -4,10 +4,10 @@ from __future__ import annotations
 import numpy as np
 from scipy.ndimage import binary_dilation
 
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.morphology.morphology import get_endpoints
-from hamingja_dungeon.areas.morphology.structure_elements import PLUS
-from hamingja_dungeon.areas.rooms.room import Room
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.utils.morphology.morphology import get_endpoints
+from hamingja_dungeon.utils.morphology.structure_elements import PLUS
+from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
 
 

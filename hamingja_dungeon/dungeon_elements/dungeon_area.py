@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 from typing import Tuple
 
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
-from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.vector import Vector
-from hamingja_dungeon.areas.rooms.room import Room
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.exceptions import EmptyFitArea
+
+from hamingja_dungeon.hallway_designers.hallway_designer import HallwayDesigner
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.dungeon_elements.room import Room
 
 
 class DungeonArea(DungeonObject):

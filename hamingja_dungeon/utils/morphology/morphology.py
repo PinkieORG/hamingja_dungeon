@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 from scipy.ndimage import binary_hit_or_miss
 
-from hamingja_dungeon.areas.morphology.structure_elements import ENDPOINTS
+from hamingja_dungeon.utils.morphology.structure_elements import ENDPOINTS
 
 
 def prune(array: np.array, iterations: int = 1) -> np.array:

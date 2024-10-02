@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from hamingja_dungeon.areas.vector import Vector
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.utils.direction import Direction
 
 
 class HallwayAction:
@@ -14,7 +14,7 @@ class HallwayAction:
 
 
 def get_all_actions() -> dict[str, HallwayAction]:
-    from hamingja_dungeon.areas.rooms.hallways.hallway_designer import HallwayDesigner
+    from hamingja_dungeon.hallway_designers.hallway_designer import HallwayDesigner
 
     def _valid_head(
         designer: HallwayDesigner, head: Vector, direction: Direction

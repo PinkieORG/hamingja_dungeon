@@ -4,12 +4,12 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dimension_sampler import DimensionSampler
-from hamingja_dungeon.areas.dungeon_object import DungeonObject
-from hamingja_dungeon.areas.exceptions import EmptyFitArea
-from hamingja_dungeon.areas.morphology.morphology import prune
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
+from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.utils.exceptions import EmptyFitArea
+from hamingja_dungeon.utils.morphology.morphology import prune
+from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.tile_types import tile_dt
 from hamingja_dungeon.utils.utils import circle_mask
 

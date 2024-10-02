@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-from hamingja_dungeon.areas.morphology.morphology import prune
+from hamingja_dungeon.utils.morphology.morphology import prune
 
 
 def tighten(array: np.array):

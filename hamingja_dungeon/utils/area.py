@@ -7,14 +7,14 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
-from hamingja_dungeon.areas.morphology.structure_elements import (
+from hamingja_dungeon.utils.morphology.structure_elements import (
     OUTSIDE_CORNERS, SQUARE,
     HORIZONTAL,
     VERTICAL,
     INSIDE_CORNERS,
 )
-from hamingja_dungeon.areas.vector import Vector
-from hamingja_dungeon.direction.direction import Direction
+from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.utils.direction import Direction
 
 
 class Area:
