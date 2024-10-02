@@ -193,19 +193,18 @@ class Area:
         self._set_mask_values(origin, to_remove, False)
         return self
 
-    def border(self, thickness: int = 1) -> Area:
-        """Returns a border of the given thickness."""
+    def border(self, thickness: int = 1, direction: Direction = None) -> Area:
+        """Returns a border of the given thickness in the given direction.
+        Border in all direction will be returned if direction is None."""
         if thickness < 0:
             raise ValueError("Thickness cannot be negative.")
         if thickness == 0:
             return Area.empty_area(self.size)
-        return Area.from_array(
-            self.mask
-            & ~binary_erosion(self.mask, structure=SQUARE, iterations=thickness)
-        )
-
-    def border_in_direction(self, direction: Direction) -> Area:
-        """Returns a border in the specific direction."""
+        if direction is None:
+            return Area.from_array(
+                self.mask
+                & ~binary_erosion(self.mask, structure=SQUARE, iterations=thickness)
+            )
         structure = VERTICAL if direction.is_vertical() else HORIZONTAL
         if direction == direction.EAST:
             origin = (0, -1)
@@ -249,7 +248,7 @@ class Area:
 
     def connected_border(self) -> Area:
         """Returns a border without the area's outside corners."""
-        return self.border() - self.corners()
+        return self.border() - self.corners() - self.outside_corners()
 
     def sample(self) -> Vector:
         """Samples and returns a position of a true value within the area."""

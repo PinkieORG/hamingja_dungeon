@@ -15,7 +15,7 @@ class AreaPrintTests(unittest.TestCase):
     def test_border_in_direction(self):
         print("border in direction test:")
         for dir in Direction.get_all_directions():
-            print_test_areas(Area.border_in_direction, dir)
+            print_test_areas(Area.border, dir)
 
     def test_corners_in_direction(self):
         print("corners in direction test:")
