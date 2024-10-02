@@ -31,6 +31,6 @@ class Hallway(Room):
         self.draw(wall, self.hallway_border)
 
         endpoints = get_endpoints(borderless)
-        self.room_anchor = (
-            binary_dilation(endpoints, structure=PLUS) & self.hallway_border.mask
+        self.room_anchor = Area.from_array(
+            binary_dilation(endpoints, structure=PLUS) & self.border().mask
         )
