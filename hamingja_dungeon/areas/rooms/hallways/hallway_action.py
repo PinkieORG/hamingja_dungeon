@@ -5,6 +5,9 @@ from hamingja_dungeon.direction.direction import Direction
 
 
 class HallwayAction:
+    """An action that can be performed during drawing of the hallway.
+    Has a condition that specify if the subsequent effect can be performed."""
+
     def __init__(self, condition, effect):
         self.condition = condition
         self.effect = effect
@@ -16,6 +19,8 @@ def get_all_actions() -> dict[str, HallwayAction]:
     def _valid_head(
         designer: HallwayDesigner, head: Vector, direction: Direction
     ) -> bool:
+        """Checks if the new head of the drawing process is valid; i.e. it's inside
+        the area, it doesn't collide with itself e.g."""
         neighbours = head.neighbours()
         for neighbour in neighbours:
             if not designer.dungeon_area.is_inside_area(neighbour):
@@ -34,7 +39,10 @@ def get_all_actions() -> dict[str, HallwayAction]:
                 return False
         return True
 
-    def _move(designer: HallwayDesigner, head: Vector, direction: Direction = None):
+    def _move(
+        designer: HallwayDesigner, head: Vector, direction: Direction = None
+    ) -> None:
+        """Set the designers parameters correctly after a moving action."""
         designer.points.append(head)
         designer.head_point = head
         if direction is not None:

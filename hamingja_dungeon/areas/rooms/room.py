@@ -5,7 +5,7 @@ import numpy as np
 
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.areas.area import Area
-from hamingja_dungeon.areas.dimension_range import DimensionSampler
+from hamingja_dungeon.areas.dimension_sampler import DimensionSampler
 from hamingja_dungeon.areas.dungeon_object import DungeonObject
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
 from hamingja_dungeon.areas.morphology.morphology import prune
@@ -17,11 +17,13 @@ ROOM_MIN_SIZE = (3, 3)
 
 
 class Room(DungeonObject):
+    """Represent a room that can be inserted into dungeon area."""
+
     def __init__(
-            self,
-            size: Tuple[int, int],
-            fill_value: np.ndarray = None,
-            border_fill_value: np.ndarray = None
+        self,
+        size: Tuple[int, int],
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
     ):
         if fill_value is None:
             fill_value = tile_types.floor
@@ -39,11 +41,11 @@ class Room(DungeonObject):
 
 class LRoom(Room):
     def __init__(
-            self,
-            size: Tuple[int, int],
-            fill_value: np.ndarray = None,
-            border_fill_value: np.ndarray = None,
-            direction: Direction = None,
+        self,
+        size: Tuple[int, int],
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
+        direction: Direction = None,
     ):
         if direction is None:
             direction = Direction.get_random_direction()
@@ -75,10 +77,10 @@ class LRoom(Room):
 
 class CircleRoom(Room):
     def __init__(
-            self,
-            dim: int,
-            fill_value: np.ndarray = None,
-            border_fill_value: np.ndarray = None,
+        self,
+        dim: int,
+        fill_value: np.ndarray = None,
+        border_fill_value: np.ndarray = None,
     ):
         if border_fill_value is None:
             border_fill_value = tile_types.wall

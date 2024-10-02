@@ -7,6 +7,7 @@ from hamingja_dungeon.areas.morphology.structure_elements import ENDPOINTS_4
 
 
 def prune(array: np.array, iterations: int = 1) -> np.array:
+    """Removes endpoints from an array."""
     if iterations < 0:
         raise ValueError("Iteration cannot be negative.")
 

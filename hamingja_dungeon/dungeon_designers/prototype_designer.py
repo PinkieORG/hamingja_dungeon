@@ -1,13 +1,15 @@
 import random
 
-from hamingja_dungeon.areas.dimension_range import DimensionSampler
+from hamingja_dungeon.areas.dimension_sampler import DimensionSampler
 from hamingja_dungeon.areas.dungeon_area import DungeonArea
 from hamingja_dungeon.areas.exceptions import EmptyFitArea
 from hamingja_dungeon.areas.rooms.room import CircleRoom, LRoom, Room
-from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import \
-    AbstractDungeonAreaDesigner
-from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import \
-    DungeonAreaConfig
+from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import (
+    AbstractDungeonAreaDesigner,
+)
+from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
+    DungeonAreaConfig,
+)
 from hamingja_dungeon.tile_types import carpet
 
 
@@ -28,8 +30,10 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
-        if num < 0.8:
+        if num < 0.1:
             room = Room(size)
+        elif num < 0.2:
+            room = LRoom(size)
         else:
             room = CircleRoom(min(size))
         return room

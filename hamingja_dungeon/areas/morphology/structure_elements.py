@@ -21,6 +21,8 @@ CORNERS = {
 
 @dataclass
 class HoMStructure:
+    """Hit or Miss structure element for a scipy operation."""
+
     hit: np.array
     miss: np.array
     origin: Tuple[int, int]

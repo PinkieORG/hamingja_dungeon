@@ -4,6 +4,17 @@ from scipy.ndimage import distance_transform_edt
 from hamingja_dungeon.areas.morphology.morphology import prune
 
 
+def tighten(array: np.array):
+    """Shrinks the bounding box (np.array) so its tight around the True values."""
+    non_zero_rows = np.where(np.any(array != 0, axis=1))[0]
+    non_zero_columns = np.where(np.any(array != 0, axis=0))[0]
+
+    return array[
+        non_zero_rows.min() : non_zero_rows.max() + 1,
+        non_zero_columns.min() : non_zero_columns.max() + 1,
+    ]
+
+
 def circle_mask(dim: int) -> np.array:
     """Returns a circle binary mask without the apexes on each side that do not
     border with the inside of the circle."""

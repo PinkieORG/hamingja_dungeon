@@ -52,6 +52,7 @@ class Area:
 
     @staticmethod
     def empty_area(size: Tuple[int, int]) -> Area:
+        """Creates an empty area of the given size."""
         area = Area(size)
         area.mask.fill(False)
         return area
@@ -139,7 +140,8 @@ class Area:
         origin_second: Vector,
         second: Area,
     ) -> Area:
-        """Returns an intersection of two areas."""
+        """Returns an intersection of two areas as if they have been placed according
+        to the given origins."""
         if not origin_first.is_positive() or not origin_second.is_positive():
             raise ValueError("The origin of the area has to be positive.")
         first_larger = Area.empty_area(self.size)
@@ -176,7 +178,7 @@ class Area:
         return np.all(other.mask & self.mask == self.mask)
 
     # TODO rename this
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Return true if there are no true elements"""
         return not np.any(self.mask)
 

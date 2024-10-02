@@ -35,6 +35,8 @@ class DungeonObject(Area):
         return self._tiles
 
     def in_childless_area(self, p: Vector) -> bool:
+        """Checks whether a point is in an area of the area not occupied by its
+        children"""
         return self.childless_area().is_inside_area(p)
 
     def fullness(self) -> float:
@@ -79,7 +81,7 @@ class DungeonObject(Area):
             raise ValueError("fill_value needs to have the tile dtype.")
         self.draw(value, mask=self.border(thickness))
 
-    def draw_inside(self, value: np.ndarray):
+    def draw_inside(self, value: np.ndarray) -> None:
         """Will draw the inside with the given value."""
         if value.dtype != tile_dt:
             raise ValueError("fill_value needs to have the tile dtype.")

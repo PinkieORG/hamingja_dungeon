@@ -59,6 +59,9 @@ class DungeonArea(DungeonObject):
     def make_entrance(
         self, first_id: int, second_id: int, fill_value: np.ndarray = None
     ) -> None:
+        """Make entrance between two already placed room given by their ids. The
+        entrance will be a new child inserted into both room and will have the given
+        fill value."""
         if fill_value is None:
             fill_value = tile_types.floor
         if fill_value.dtype != tile_types.tile_dt:

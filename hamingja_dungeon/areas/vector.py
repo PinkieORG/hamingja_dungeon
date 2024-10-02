@@ -50,5 +50,5 @@ class Vector:
         return result
 
     @staticmethod
-    def from_tuple(tup: Tuple[int, int]):
+    def from_tuple(tup: Tuple[int, int]) -> Vector:
         return Vector(*tup)
