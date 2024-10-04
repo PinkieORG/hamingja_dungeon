@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
     DungeonAreaConfig,
 )
@@ -15,5 +15,5 @@ class AbstractDungeonAreaDesigner(ABC):
         raise NotImplemented
 
     @abstractmethod
-    def populate(self, dungeon_area: DungeonArea):
+    def populate(self, dungeon_area: Sector):
         raise NotImplemented

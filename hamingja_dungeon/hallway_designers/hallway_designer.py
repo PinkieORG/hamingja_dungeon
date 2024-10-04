@@ -3,7 +3,7 @@ import random
 from dataclasses import dataclass
 from typing import List, Tuple
 import numpy as np
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.hallway_designers.hallway_action import (
     HallwayAction,
     get_all_actions,
@@ -45,7 +45,7 @@ class HallwayDesigner:
         def reset_cooldown(self) -> None:
             self.cooldown = 0
 
-    def __init__(self, dungeon_area: DungeonArea):
+    def __init__(self, dungeon_area: Sector):
         self.dungeon_area = dungeon_area
 
         all_actions = get_all_actions()
@@ -82,7 +82,7 @@ class HallwayDesigner:
         the area, it doesn't collide with itself e.g."""
         neighbours = head.neighbours()
         for neighbour in neighbours:
-            if not self.dungeon_area.is_inside_area(neighbour):
+            if not self.dungeon_area.is_inside_mask(neighbour):
                 return False
         # TODO childless area without child borders in the future.
         if not self.dungeon_area.in_childless_area(head):

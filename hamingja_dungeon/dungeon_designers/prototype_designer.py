@@ -4,7 +4,7 @@ from hamingja_dungeon.hallway_designers.hallway_designer import (
     HallwayDesigner,
 )
 from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.dungeon_elements.room import CircleRoom, LRoom, Room
@@ -43,7 +43,7 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
             room = CircleRoom(min(size))
         return room
 
-    def _create_hallway(self, dungeon_area: DungeonArea, room_id: int):
+    def _create_hallway(self, dungeon_area: Sector, room_id: int):
         room = dungeon_area.get_child(room_id).object
         if not isinstance(room, Room):
             raise ValueError("Hallway can be created only from a room.")
@@ -55,7 +55,7 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
             origin_point, Direction.get_all_directions()
         )
 
-    def _prepare(self, dungeon_area: DungeonArea):
+    def _prepare(self, dungeon_area: Sector):
         start_room = self._get_room()
         start_room.draw_inside(carpet)
         fit_area = dungeon_area.fit_in(start_room)
@@ -66,7 +66,7 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
         self._to_process.append(id)
         self.hallway_designer = HallwayDesigner(dungeon_area)
 
-    def _add_room(self, dungeon_area: DungeonArea):
+    def _add_room(self, dungeon_area: Sector):
         if len(self._to_process) == 0:
             return -1
         tries = 0
@@ -97,7 +97,7 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
         self._to_process.remove(neighbour_id)
         return 1
 
-    def populate(self, dungeon_area: DungeonArea):
+    def populate(self, dungeon_area: Sector):
         self._prepare(dungeon_area)
         while dungeon_area.fullness() < 0.7:
             code = self._add_room(dungeon_area)

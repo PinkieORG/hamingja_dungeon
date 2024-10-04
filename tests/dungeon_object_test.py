@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from scipy.ndimage import binary_dilation
 
-from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.dungeon_elements.area import Area
 from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.tile_types import carpet, column, wall
 from test_utils import (
@@ -38,12 +38,12 @@ class PrintTests(unittest.TestCase):
             print_dungeon_object(dungeon_object)
 
     def test_draw_children(self):
-        to_add = DungeonObject((3, 2), fill_value=carpet)
-        print_test_dungeon_objects(DungeonObject.add_child, Vector(4, 7), to_add)
+        to_add = Area((3, 2), fill_value=carpet)
+        print_test_dungeon_objects(Area.add_child, Vector(4, 7), to_add)
 
     def test_fit_adjacent_at_border(self):
-        neighbour = DungeonObject((5, 3), fill_value=carpet, border_thickness=1)
-        to_fit = DungeonObject((3, 3), fill_value=column, border_thickness=1)
+        neighbour = Area((5, 3), fill_value=carpet, border_thickness=1)
+        to_fit = Area((3, 3), fill_value=column, border_thickness=1)
         l_shape = get_test_dungeon_objects().get("L shape")
         id = l_shape.add_child(Vector(1, 2), neighbour)
         print("original: ")
