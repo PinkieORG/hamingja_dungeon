@@ -45,6 +45,12 @@ class HallwayDesigner:
         def reset_cooldown(self) -> None:
             self.cooldown = 0
 
+        def decrease_likelihood(self, factor: int) -> None:
+            self.likelihood *= factor
+
+        def reset_likelihood(self) -> None:
+            self.likelihood = self.base_likelihood
+
     def __init__(self, dungeon_area: Sector):
         self.dungeon_area = dungeon_area
 

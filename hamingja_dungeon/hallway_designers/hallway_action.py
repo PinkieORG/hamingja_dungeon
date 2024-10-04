@@ -49,6 +49,13 @@ def get_all_actions() -> dict[str, HallwayAction]:
         new_head = designer.head_point + new_direction.unit_vector()
         _move(designer, new_head, new_direction)
 
+        action = designer.actions.get("turn_right")
+        if action:
+            action.decrease_likelihood(0.6)
+        action = designer.actions.get("turn_left")
+        if action:
+            action.reset_likelihood()
+
     result["turn_right"] = HallwayAction(condition=right_condition, effect=right_effect)
 
     def left_condition(designer: HallwayDesigner) -> bool:
@@ -60,6 +67,13 @@ def get_all_actions() -> dict[str, HallwayAction]:
         new_direction = designer.direction.left()
         new_head = designer.head_point + new_direction.unit_vector()
         _move(designer, new_head, new_direction)
+
+        action = designer.actions.get("turn_left")
+        if action:
+            action.decrease_likelihood(0.6)
+        action = designer.actions.get("turn_right")
+        if action:
+            action.reset_likelihood()
 
     result["turn_left"] = HallwayAction(condition=left_condition, effect=left_effect)
 
