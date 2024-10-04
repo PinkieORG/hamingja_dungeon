@@ -135,6 +135,16 @@ class Area(Shape):
             raise ValueError("The child of this id does not exists.")
         return self.children.get(id)
 
+    # TODO binary search?
+    def get_children_at(self, point: Vector) -> list[int]:
+        """Returns ids of all children at the given point."""
+        result = []
+        for id, child in self.children.items():
+            child_shape = self.child_shape(id)
+            if child_shape.is_inside_mask(point):
+                result.append(id)
+        return result
+
     def draw_children(self) -> None:
         """Draws all of its children."""
         for child in self.children.values():
