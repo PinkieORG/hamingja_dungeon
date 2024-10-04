@@ -52,7 +52,7 @@ class HallwayDesigner:
         self._reset()
 
         # hardcoded to config in the future
-        self.max_length = 30
+        self.max_length = 50
         self.actions = {
             "move_forward": self.Action(
                 object=all_actions.get("move_forward"),
@@ -192,6 +192,5 @@ class HallwayDesigner:
             except CannotPerformAction:
                 break
         origin, hallway = self._create_hallway()
-        print(self.length)
         self._reset()
         return origin, hallway

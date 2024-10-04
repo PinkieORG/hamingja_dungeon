@@ -1,4 +1,6 @@
 import random
+
+from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.hallway_designers.hallway_designer import (
     DesignerError,
     HallwayDesigner,
@@ -62,7 +64,33 @@ class PrototypeDesigner:
         self._to_process.append(id)
         self.hallway_designer = HallwayDesigner(dungeon_area)
 
-    def _add_room(self, dungeon_area: Sector):
+    def connect_nearby(self, sector: Sector, room_id: int) -> None:
+        child = sector.get_child(room_id)
+        room = child.object
+        origin = child.origin
+        if not isinstance(room, Room):
+            raise ValueError("Can connect only rooms.")
+
+        entrypoints = Shape.empty(sector.size).insert_shape(origin, room.entrypoints)
+
+        nearby = set()
+        for entrypoint in entrypoints.points():
+            ids = sector.get_children_at(entrypoint)
+            ids.remove(room_id)
+            for id in ids:
+                child = sector.get_child(id)
+                if not isinstance(child.object, Room):
+                    continue
+                child_entrypoints = Shape.empty(sector.size).insert_shape(child.origin,
+                                                                          child.object.entrypoints)
+                if not (entrypoints & child_entrypoints).is_empty():
+                    nearby.add(id)
+
+        print(nearby)
+        for nearby_id in nearby:
+            sector.make_entrance(room_id, nearby_id)
+
+    def _add_room(self, sector: Sector):
         if len(self._to_process) == 0:
             return -1
         tries = 0
@@ -72,8 +100,9 @@ class PrototypeDesigner:
             if num < 0.8:
                 room = self._get_room()
                 try:
-                    new_room_id = dungeon_area.add_room_adjacent(room, neighbour_id)
-                    dungeon_area.make_entrance(neighbour_id, new_room_id)
+                    new_room_id = sector.add_room_adjacent(room, neighbour_id)
+                    # sector.make_entrance(neighbour_id, new_room_id)
+                    self.connect_nearby(sector, new_room_id)
                 except EmptyFitArea:
                     tries += 1
                     continue
@@ -81,10 +110,11 @@ class PrototypeDesigner:
                 return 1
             else:
                 try:
-                    origin, hallway = self._create_hallway(dungeon_area, neighbour_id)
-                    print(origin)
-                    new_room_id = dungeon_area.add_room(origin, hallway)
-                    dungeon_area.make_entrance(neighbour_id, new_room_id)
+                    origin, hallway = self._create_hallway(sector, neighbour_id)
+                    new_room_id = sector.add_room(origin, hallway)
+                    # sector.make_entrance(neighbour_id, new_room_id)
+                    self.connect_nearby(sector, new_room_id)
+
                 except DesignerError:
                     tries += 1
                     continue
