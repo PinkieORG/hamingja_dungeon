@@ -8,7 +8,8 @@ import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
 from hamingja_dungeon.utils.morphology.structure_elements import (
-    OUTSIDE_CORNERS, SQUARE,
+    OUTSIDE_CORNERS,
+    SQUARE,
     HORIZONTAL,
     VERTICAL,
     INSIDE_CORNERS,
@@ -31,13 +32,13 @@ class Shape:
         if not origin.is_positive():
             raise ValueError("The origin of the shape has to be positive.")
         afflicted_area = self.mask[
-            origin.y : origin.y + shape.h, origin.x: origin.x + shape.w
-                         ]
+            origin.y : origin.y + shape.h, origin.x : origin.x + shape.w
+        ]
         if 0 in afflicted_area.shape:
             return
         cropped_mask = shape.mask[
             0 : afflicted_area.shape[0], 0 : afflicted_area.shape[1]
-                       ]
+        ]
         afflicted_area[cropped_mask] = set_to
 
     @staticmethod
@@ -156,6 +157,7 @@ class Shape:
         """Returns a number of true points."""
         return np.count_nonzero(self.mask)
 
+    # TODO just make it __str__.
     def print(self) -> None:
         """Convenient print."""
         image = np.where(self._mask, "■", "□")
@@ -250,6 +252,13 @@ class Shape:
         """Returns a border without the shape's outside corners."""
         return self.border() - self.corners() - self.outside_corners()
 
+    def points(self) -> list[Vector]:
+        """Returns a list of all true valued points."""
+        result = []
+        for y, x in np.argwhere(self.mask):
+            result.append(Vector(y, x))
+        return result
+
     def sample(self) -> Vector:
         """Samples and returns a position of a true value within the shape."""
         if self.is_empty():
@@ -260,7 +269,7 @@ class Shape:
     def fit_in(
         self, to_fit: Shape, anchor: Shape = None, to_fit_anchor: Shape = None
     ) -> Shape:
-        """Returns an shape of the same size with true values where the given
+        """Returns a shape of the same size with true values where the given
         shape fits inside. anchor defines the places of the object the shape to
         fit needs to touch. to_fit_anchor defines the places of to_fit which
         need to touch the object anchor. Both of these equals to their
