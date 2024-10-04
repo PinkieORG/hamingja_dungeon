@@ -33,7 +33,7 @@ class Sector(Area):
         anchor = Shape.empty(self.size).insert_shape(
             neighbour.origin, neighbour.object.entrypoints
         )
-        without_children = (~self.child_shape()).insert_shape(
+        without_children = (~self.children_shapes()).insert_shape(
             neighbour.origin, neighbour.object.border()
         )
         return without_children.fit_in(
