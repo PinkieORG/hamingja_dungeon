@@ -43,8 +43,13 @@ class Area(Shape):
 
     def child_shape(self) -> Shape:
         """Returns a combined shapes of the children."""
+        if without is None:
+            without = []
         result = Shape.empty(self.size)
-        for child in self.children.values():
+        children = {
+            key: value for key, value in self.children.items() if key not in without
+        }
+        for child in children.values():
             origin = child.origin
             object = child.object
             afflicted_area = result.mask[
