@@ -21,6 +21,7 @@ class DesignerError(Exception):
     pass
 
 
+# TODO magnetism towards already placed rooms to reduce the amount of dead ends.
 class HallwayDesigner:
     """Creates hallways in the dungeon area. Draws a hallway path tile by tile
     according to customizable actions."""

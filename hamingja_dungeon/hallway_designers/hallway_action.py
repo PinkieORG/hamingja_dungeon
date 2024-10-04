@@ -12,6 +12,8 @@ class HallwayAction:
         self.effect = effect
 
 
+# TODO action to stop the drawing process not every hallway is maximum length if it isn't cornered.
+# TODO crossections.
 def get_all_actions() -> dict[str, HallwayAction]:
     from hamingja_dungeon.hallway_designers.hallway_designer import HallwayDesigner
 

@@ -97,7 +97,7 @@ class PrototypeDesigner:
         neighbour_id = random.choice(self._to_process)
         while tries < 2:
             num = random.random()
-            if num < 0.8:
+            if num < 0.7:
                 room = self._get_room()
                 try:
                     new_room_id = sector.add_room_adjacent(room, neighbour_id)
