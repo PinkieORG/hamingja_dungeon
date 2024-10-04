@@ -39,9 +39,23 @@ class Area(Shape):
         return self.childless_shape().is_inside_mask(p)
 
     def fullness(self) -> float:
-        return self.child_shape().volume() / self.volume()
+        return self.children_shapes().volume() / self.volume()
 
-    def child_shape(self) -> Shape:
+    def child_shape(self, id: int) -> Shape:
+        """Returns a shape of the child given by its id. The result has the same size
+        as the area."""
+        result = Shape.empty(self.size)
+        child = self.get_child(id)
+        origin = child.origin
+        object = child.object
+        afflicted_area = result.mask[
+                         origin.y: origin.y + object.h, origin.x: origin.x + object.w
+                         ]
+
+        afflicted_area[object.mask] = True
+        return result
+
+    def children_shapes(self, without: [int] = None) -> Shape:
         """Returns a combined shapes of the children."""
         if without is None:
             without = []
@@ -62,7 +76,7 @@ class Area(Shape):
     def childless_shape(self) -> Shape:
         """Returns a shape with the children removed."""
         result = Shape.from_array(self.mask)
-        return result & ~self.child_shape()
+        return result & ~self.children_shapes()
 
     def inner_shape(self) -> Shape:
         """Returns a shape without the border."""
@@ -96,9 +110,7 @@ class Area(Shape):
         protrudes outside of this area it will be cropped."""
         if not p.is_positive():
             raise ValueError("The area cannot be drawn from negative point.")
-        afflicted_tiles = self.tiles[
-            p.y : p.y + area.h, p.x : p.x + area.w
-        ]
+        afflicted_tiles = self.tiles[p.y : p.y + area.h, p.x : p.x + area.w]
         if 0 in afflicted_tiles.shape:
             return
         cropped_mask = area.mask[
