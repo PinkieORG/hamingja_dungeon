@@ -58,7 +58,7 @@ class HallwayDesigner:
                 object=all_actions.get("move_forward"),
                 base_likelihood=0.6,
                 base_cooldown=0,
-                likelihood=0.6,
+                likelihood=3,
                 cooldown=0,
             ),
             "turn_left": self.Action(

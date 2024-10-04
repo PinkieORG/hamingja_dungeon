@@ -36,7 +36,7 @@ class Room(Area):
             fill_value=fill_value,
         )
         self.draw_border(border_fill_value)
-        self.room_anchor = self.connected_border()
+        self.entrypoints = self.connected_border()
 
 
 class LRoom(Room):
@@ -72,7 +72,7 @@ class LRoom(Room):
         origin = fit_area.sample()
         self.remove_shape(origin, filling)
         self.draw_border(border_fill_value)
-        self.room_anchor = self.connected_border()
+        self.entrypoints = self.connected_border()
 
 
 class CircleRoom(Room):
@@ -98,4 +98,4 @@ class CircleRoom(Room):
         room_anchor = deepcopy(self.mask)
         room_anchor[1:-1, 1:-1] = False
         room_anchor = prune(room_anchor)
-        self.room_anchor = Shape.from_array(room_anchor)
+        self.entrypoints = Shape.from_array(room_anchor)

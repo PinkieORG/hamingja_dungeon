@@ -8,6 +8,7 @@ from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
 
 
+# TODO create a common super class for hallway and room (region, section?) since hallway is not really a room, is it?
 class Hallway(Room):
     """Represents a hallway: a path-like room surrounded by walls."""
 
@@ -31,6 +32,6 @@ class Hallway(Room):
         self.draw(wall, self.hallway_border)
 
         endpoints = get_endpoints(borderless)
-        self.room_anchor = Shape.from_array(
+        self.entrypoints = Shape.from_array(
             binary_dilation(endpoints, structure=PLUS) & self.border().mask
         )

@@ -45,7 +45,7 @@ class PrototypeDesigner:
             raise ValueError("Hallway can be created only from a room.")
         room_origin = dungeon_area.get_child(room_id).origin
 
-        anchor_point = room.room_anchor.sample()
+        anchor_point = room.entrypoints.sample()
         origin_point = room_origin + anchor_point
         return self.hallway_designer.design_hallway(
             origin_point, Direction.get_all_directions()

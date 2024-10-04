@@ -31,13 +31,13 @@ class Sector(Area):
             raise ValueError("The neighbour of the room has to be a room.")
 
         anchor = Shape.empty(self.size).insert_shape(
-            neighbour.origin, neighbour.object.room_anchor
+            neighbour.origin, neighbour.object.entrypoints
         )
         without_children = (~self.child_shape()).insert_shape(
             neighbour.origin, neighbour.object.border()
         )
         return without_children.fit_in(
-            to_fit, anchor=anchor, to_fit_anchor=to_fit.room_anchor
+            to_fit, anchor=anchor, to_fit_anchor=to_fit.entrypoints
         )
 
     def add_room(self, origin: Vector, room: Room) -> int:
@@ -78,9 +78,9 @@ class Sector(Area):
 
         border_intersection = self.intersection(
             first.origin,
-            first_room.room_anchor,
+            first_room.entrypoints,
             second.origin,
-            second_room.room_anchor,
+            second_room.entrypoints,
         )
         if border_intersection.is_empty():
             raise EmptyFitArea(
