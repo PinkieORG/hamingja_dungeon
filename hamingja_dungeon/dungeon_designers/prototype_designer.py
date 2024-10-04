@@ -8,18 +8,14 @@ from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.dungeon_elements.room import CircleRoom, LRoom, Room
-from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import (
-    AbstractDungeonAreaDesigner,
-)
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
     DungeonAreaConfig,
 )
 from hamingja_dungeon.tile_types import carpet
 
 
-class PrototypeDesigner(AbstractDungeonAreaDesigner):
+class PrototypeDesigner:
     def __init__(self, config: DungeonAreaConfig):
-        super().__init__(config)
         self._to_process: list[int] = []
         self.hallway_designer = None
         if config.room_size_method == "factor":
