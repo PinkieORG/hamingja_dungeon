@@ -6,6 +6,7 @@ from hamingja_dungeon.utils.morphology.morphology import get_endpoints
 from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
 from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
+from hamingja_dungeon.utils.utils import tighten
 
 
 # TODO create a common super class for hallway and room (region, section?) since hallway is not really a room, is it?
@@ -18,6 +19,7 @@ class Hallway(Room):
         fill_value: np.ndarray = None,
         border_fill_value: np.ndarray = None,
     ):
+        path = tighten(path)
         new_size = (path.shape[0] + 2, path.shape[1] + 2)
         super().__init__(
             new_size,
