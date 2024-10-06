@@ -41,6 +41,7 @@ class Hallway(Room):
         )
 
     # TODO Make about localisation not only binary check.
+    # TODO: make it work for very short hallways.
     def has_dead_end(self):
         labeled, count = label(self.endpoints, background=0, return_num=True)
         entrances = self.get_entrances_area()
