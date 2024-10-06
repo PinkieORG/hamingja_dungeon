@@ -1,5 +1,6 @@
 import random
-
+import igraph as ig
+from hamingja_dungeon.dungeon_elements.hallway import Hallway
 from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.hallway_designers.hallway_designer import (
     DesignerError,
@@ -16,6 +17,7 @@ from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
 from hamingja_dungeon.tile_types import carpet
 
 
+# TODO look for entrances and not put new ones close to the already placed.
 class PrototypeDesigner:
     def __init__(self, config: DungeonAreaConfig):
         self._to_process: list[int] = []
@@ -33,9 +35,9 @@ class PrototypeDesigner:
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
-        if num < 0.8:
+        if num < 0.7:
             room = Room(size)
-        elif num < 0.9:
+        elif num < 0.8:
             room = LRoom(size)
         else:
             room = CircleRoom(min(size))
@@ -81,13 +83,16 @@ class PrototypeDesigner:
                 child = sector.get_child(id)
                 if not isinstance(child.object, Room):
                     continue
-                child_entrypoints = Shape.empty(sector.size).insert_shape(child.origin,
-                                                                          child.object.entrypoints)
+                child_entrypoints = Shape.empty(sector.size).insert_shape(
+                    child.origin, child.object.entrypoints
+                )
                 if not (entrypoints & child_entrypoints).is_empty():
                     nearby.add(id)
 
-        print(nearby)
         for nearby_id in nearby:
+            distance = sector.room_graph.distances(room_id, nearby_id)[0][0]
+            if distance < 3:
+                continue
             sector.make_entrance(room_id, nearby_id)
 
     def _add_room(self, sector: Sector):
@@ -97,7 +102,7 @@ class PrototypeDesigner:
         neighbour_id = random.choice(self._to_process)
         while tries < 2:
             num = random.random()
-            if num < 0.7:
+            if num < 0.6 or isinstance(sector.get_child(neighbour_id).object, Hallway):
                 room = self._get_room()
                 try:
                     new_room_id = sector.add_room_adjacent(room, neighbour_id)
@@ -123,6 +128,7 @@ class PrototypeDesigner:
         self._to_process.remove(neighbour_id)
         return 1
 
+    # TODO populate with iterations.
     def populate(self, dungeon_area: Sector):
         self._prepare(dungeon_area)
         while dungeon_area.fullness() < 0.7:
