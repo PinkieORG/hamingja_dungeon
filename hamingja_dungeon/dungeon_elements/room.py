@@ -51,6 +51,13 @@ class Room(Area):
         self.remove_child(id)
         self.entrances.remove(id)
 
+    def get_entrances_area(self) -> Shape:
+        result = Area.empty(self.size)
+        for entrance_id in self.entrances:
+            entrance = self.get_child(entrance_id)
+            result.insert_shape(entrance.origin, entrance.object)
+        return result
+
 class LRoom(Room):
     def __init__(
         self,

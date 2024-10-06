@@ -40,6 +40,7 @@ class Hallway(Room):
             binary_dilation(self.endpoints, structure=PLUS) & self.border().mask
         )
 
+    # TODO Make about localisation not only binary check.
     def has_dead_end(self):
         labeled, count = label(self.endpoints, background=0, return_num=True)
         entrances = self.get_entrances_area()
