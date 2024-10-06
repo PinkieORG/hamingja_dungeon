@@ -116,7 +116,7 @@ def get_test_dungeon_objects() -> dict[str, Area]:
     return result
 
 
-def get_test_dungeon_area() -> Sector:
+def get_test_sector() -> Sector:
     dungeon_area = Sector(big_area.size, fill_value=floor)
     dungeon_area.mask = big_area.mask
     return dungeon_area
@@ -143,13 +143,13 @@ def print_test_dungeon_objects(func, *args):
     for name, dungeon_object in dungeon_objects.items():
         print_name(name)
         print("original: ")
-        print_dungeon_object(dungeon_object)
+        print_sector(dungeon_object)
         print("result: ")
         func(dungeon_object, *args)
-        print_dungeon_object(dungeon_object)
+        print_sector(dungeon_object)
 
 
-def print_dungeon_object(dungeon_object: Area) -> None:
+def print_sector(dungeon_object: Area) -> None:
     renderer = Renderer(dungeon_object)
     console = tcod.console.Console(height=dungeon_object.h, width=dungeon_object.w)
     renderer.render_console(console)
