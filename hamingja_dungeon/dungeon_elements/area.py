@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Tuple
 
@@ -25,7 +26,6 @@ class Area(Shape):
         super().__init__(size)
         if fill_value is None:
             fill_value = default
-
         self._tiles = np.full(size, fill_value=fill_value)
         self.children: dict[int, Child] = {}
         self.id_generator = itertools.count()
@@ -133,7 +133,7 @@ class Area(Shape):
         """Removes a child by its id."""
         if id not in self.children:
             raise ValueError("A child of this id does not exist.")
-        del self.children[id]
+        self.children.pop(id)
 
     def get_child(self, id: int) -> Child:
         """Returns the child of the given id."""
@@ -151,11 +151,13 @@ class Area(Shape):
                 result.append(id)
         return result
 
-    def draw_children(self) -> None:
+    def draw_children(self) -> Area:
         """Draws all of its children."""
+        result = deepcopy(self)
         for child in self.children.values():
-            child.object.draw_children()
-            self.draw_area(child.origin, child.object)
+            with_children = child.object.draw_children()
+            result.draw_area(child.origin, with_children)
+        return result
 
     def fit_adjacent_at_border(self, to_fit: Area, neighbour_id: int) -> Shape:
         """Fits the new area next to already added child given by its id.
