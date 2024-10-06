@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Tuple
 
-from pydantic import (BaseModel, confloat, conint, field_validator, model_validator)
+from pydantic import BaseModel, confloat, conint, field_validator, model_validator
 
 
 def none_attribute(object: Any) -> Optional[str]:
@@ -25,6 +25,7 @@ class DungeonAreaConfig(BaseModel):
             confloat(ge=0.0, le=1.0),
         ]
     ] = None
+    fullness: confloat(ge=0.0, le=1.0)
 
     @field_validator("range_room_size")
     @classmethod

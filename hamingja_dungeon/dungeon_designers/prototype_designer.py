@@ -24,6 +24,7 @@ class PrototypeDesigner:
     def __init__(self, config: DungeonAreaConfig):
         self._to_process: list[int] = []
         self.hallway_designer = None
+        self.config = config
         if config.room_size_method == "factor":
             self.room_dim_sampler = DimensionSampler.as_factor(
                 config.size,
@@ -37,7 +38,7 @@ class PrototypeDesigner:
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
-        if num < 0.7:
+        if num < 0.6:
             room = Room(size)
         elif num < 0.8:
             room = LRoom(size)
@@ -141,8 +142,10 @@ class PrototypeDesigner:
     # TODO populate with iterations.
     def populate(self, sector: Sector):
         self._prepare(sector)
-        while sector.fullness() < 0.7:
+        while sector.fullness() < self.config.fullness:
             code = self._add_room(sector)
             if code == -1:
                 break
+        self.remove_dead_ends(sector)
+        self.remove_dead_ends(sector)
         self.remove_dead_ends(sector)
