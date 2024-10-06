@@ -12,7 +12,7 @@ class Renderer:
 
     def update(self):
         if isinstance(self.dungeon_object, Area):
-            self.dungeon_object.draw_children()
+            self.dungeon_object = self.dungeon_object.draw_children()
 
     def render_console(self, console: Console):
         self.update()

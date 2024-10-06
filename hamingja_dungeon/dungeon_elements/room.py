@@ -12,6 +12,7 @@ from hamingja_dungeon.utils.morphology.morphology import prune
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.tile_types import tile_dt
 from hamingja_dungeon.utils.utils import circle_mask
+from hamingja_dungeon.utils.vector import Vector
 
 ROOM_MIN_SIZE = (3, 3)
 
@@ -37,7 +38,25 @@ class Room(Area):
         )
         self.draw_border(border_fill_value)
         self.entrypoints = self.connected_border()
+        self.entrances: list[int] = []
 
+    def place_entrance(self, origin: Vector, entrance: Area) -> int:
+        id = self.add_child(origin, entrance)
+        self.entrances.append(id)
+        return id
+
+    def remove_entrance(self, id: int) -> None:
+        if id not in self.entrances:
+            raise ValueError("Entrance with this id does not exist.")
+        self.remove_child(id)
+        self.entrances.remove(id)
+
+    def get_entrances_area(self) -> Shape:
+        result = Area.empty(self.size)
+        for entrance_id in self.entrances:
+            entrance = self.get_child(entrance_id)
+            result.insert_shape(entrance.origin, entrance.object)
+        return result
 
 class LRoom(Room):
     def __init__(

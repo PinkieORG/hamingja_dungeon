@@ -1,4 +1,6 @@
 import random
+from copy import deepcopy
+
 import igraph as ig
 from hamingja_dungeon.dungeon_elements.hallway import Hallway
 from hamingja_dungeon.dungeon_elements.shape import Shape
@@ -22,6 +24,7 @@ class PrototypeDesigner:
     def __init__(self, config: DungeonAreaConfig):
         self._to_process: list[int] = []
         self.hallway_designer = None
+        self.config = config
         if config.room_size_method == "factor":
             self.room_dim_sampler = DimensionSampler.as_factor(
                 config.size,
@@ -35,7 +38,7 @@ class PrototypeDesigner:
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
-        if num < 0.7:
+        if num < 0.6:
             room = Room(size)
         elif num < 0.8:
             room = LRoom(size)
@@ -128,10 +131,21 @@ class PrototypeDesigner:
         self._to_process.remove(neighbour_id)
         return 1
 
+    def remove_dead_ends(self, sector: Sector):
+        rooms_copy = deepcopy(sector.get_rooms())
+        for room_id, room in rooms_copy.items():
+            if not isinstance(room.object, Hallway):
+                continue
+            if room.object.has_dead_end():
+                sector.remove_room(room_id)
+
     # TODO populate with iterations.
-    def populate(self, dungeon_area: Sector):
-        self._prepare(dungeon_area)
-        while dungeon_area.fullness() < 0.7:
-            code = self._add_room(dungeon_area)
+    def populate(self, sector: Sector):
+        self._prepare(sector)
+        while sector.fullness() < self.config.fullness:
+            code = self._add_room(sector)
             if code == -1:
-                return
+                break
+        self.remove_dead_ends(sector)
+        self.remove_dead_ends(sector)
+        self.remove_dead_ends(sector)

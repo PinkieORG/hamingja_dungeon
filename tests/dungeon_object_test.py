@@ -9,7 +9,7 @@ from hamingja_dungeon.tile_types import carpet, column, wall
 from test_utils import (
     get_test_dungeon_objects,
     print_name,
-    print_dungeon_object,
+    print_sector,
     print_test_dungeon_objects,
 )
 
@@ -20,22 +20,22 @@ class PrintTests(unittest.TestCase):
         for name, dungeon_object in dungeon_objects.items():
             print_name(name)
             print("original: ")
-            print_dungeon_object(dungeon_object)
+            print_sector(dungeon_object)
             print("result: ")
             dungeon_object.border_thickness = 2
             dungeon_object.draw_border(wall)
-            print_dungeon_object(dungeon_object)
+            print_sector(dungeon_object)
 
     def test_draw_inside(self):
         dungeon_objects = get_test_dungeon_objects()
         for name, dungeon_object in dungeon_objects.items():
             print_name(name)
             print("original: ")
-            print_dungeon_object(dungeon_object)
+            print_sector(dungeon_object)
             print("result: ")
             dungeon_object.border_thickness = 1
             dungeon_object.draw_inside(carpet)
-            print_dungeon_object(dungeon_object)
+            print_sector(dungeon_object)
 
     def test_draw_children(self):
         to_add = Area((3, 2), fill_value=carpet)
@@ -47,7 +47,7 @@ class PrintTests(unittest.TestCase):
         l_shape = get_test_dungeon_objects().get("L shape")
         id = l_shape.add_child(Vector(1, 2), neighbour)
         print("original: ")
-        print_dungeon_object(l_shape)
+        print_sector(l_shape)
         result = l_shape.fit_adjacent_at_border(to_fit, id)
         print("result: ")
         result.print()

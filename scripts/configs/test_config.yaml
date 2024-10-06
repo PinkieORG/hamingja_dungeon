@@ -1,9 +1,12 @@
 base_name: dungeon
 
+
 dungeon_area:
   size: # (height, width)
     - 80
     - 80
+
+  fullness: 0.8
 
   room_size_method: fixed # fixed, range or factor
   fixed_room_size: # (height, width)
