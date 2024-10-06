@@ -129,6 +129,12 @@ class Area(Shape):
         self.children[id] = Child(origin, area)
         return id
 
+    def remove_child(self, id: int) -> None:
+        """Removes a child by its id."""
+        if id not in self.children:
+            raise ValueError("A child of this id does not exist.")
+        del self.children[id]
+
     def get_child(self, id: int) -> Child:
         """Returns the child of the given id."""
         if id not in self.children:
