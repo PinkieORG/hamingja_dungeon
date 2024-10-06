@@ -4,7 +4,7 @@ import numpy as np
 import igraph as ig
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.dungeon_elements.shape import Shape
-from hamingja_dungeon.dungeon_elements.area import Area
+from hamingja_dungeon.dungeon_elements.area import Area, Child
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.dungeon_elements.room import Room
@@ -18,6 +18,13 @@ class Sector(Area):
             fill_value = tile_types.wall
         super().__init__(size, fill_value=fill_value)
         self.room_graph = ig.Graph()
+
+    def get_rooms(self) -> dict[int, Child]:
+        result = {}
+        for id, child in self.children.items():
+            if isinstance(child.object, Room):
+                result[id] = child
+        return result
 
     def fit_room_adjacent(self, to_fit: Room, neighbour_id: int) -> np.array:
         """Fits a room next to one already in the sector. Rooms will share a
@@ -43,8 +50,19 @@ class Sector(Area):
     def add_room(self, origin: Vector, room: Room) -> int:
         """Adds a new room at the given origin. Returns its new id."""
         id = self.add_child(origin, room)
-        self.room_graph.add_vertex(id)
+        self.room_graph.add_vertex(id=id)
         return id
+
+    def remove_room(self, to_remove_id) -> None:
+        to_remove_index = self.room_graph.vs.find(id=to_remove_id)
+        edge_indexes = self.room_graph.incident(to_remove_index)
+        for index in edge_indexes:
+            edge = self.room_graph.es[index]
+            entrance_ids = edge["ids"]
+            for room_id, entrance_id in entrance_ids.items():
+                self.get_child(room_id).object.remove_entrance(entrance_id)
+        self.room_graph.delete_vertices([to_remove_index])
+        self.remove_child(to_remove_id)
 
     def add_room_adjacent(self, room: Room, neighbour_id: int) -> int:
         """Adds a new room that will be adjacent to its given neighbour.
@@ -88,8 +106,18 @@ class Sector(Area):
         # TODO support entrances of larger size.
         entrance_point = border_intersection.sample()
         entrance = Area((1, 1), fill_value=fill_value)
-        first_room.add_child(entrance_point - first.origin, entrance)
-        second_room.add_child(entrance_point - second.origin, entrance)
+        first_entrance_id = first_room.place_entrance(
+            entrance_point - first.origin, entrance
+        )
+        second_entrance_id = second_room.place_entrance(
+            entrance_point - second.origin, entrance
+        )
 
-        self.room_graph.add_edges([(first_id, second_id)])
+        first_index = self.room_graph.vs.find(id=first_id).index
+        second_index = self.room_graph.vs.find(id=second_id).index
 
+        self.room_graph.add_edge(
+            first_index,
+            second_index,
+            ids={first_id: first_entrance_id, second_id: second_entrance_id},
+        )
