@@ -3,7 +3,7 @@ import random
 from dataclasses import dataclass
 from typing import List, Tuple
 import numpy as np
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.hallway_designers.hallway_action import (
     HallwayAction,
     get_all_actions,
@@ -21,6 +21,7 @@ class DesignerError(Exception):
     pass
 
 
+# TODO magnetism towards already placed rooms to reduce the amount of dead ends.
 class HallwayDesigner:
     """Creates hallways in the dungeon area. Draws a hallway path tile by tile
     according to customizable actions."""
@@ -45,20 +46,26 @@ class HallwayDesigner:
         def reset_cooldown(self) -> None:
             self.cooldown = 0
 
-    def __init__(self, dungeon_area: DungeonArea):
+        def decrease_likelihood(self, factor: int) -> None:
+            self.likelihood *= factor
+
+        def reset_likelihood(self) -> None:
+            self.likelihood = self.base_likelihood
+
+    def __init__(self, dungeon_area: Sector):
         self.dungeon_area = dungeon_area
 
         all_actions = get_all_actions()
         self._reset()
 
         # hardcoded to config in the future
-        self.max_length = 30
+        self.max_length = 50
         self.actions = {
             "move_forward": self.Action(
                 object=all_actions.get("move_forward"),
                 base_likelihood=0.6,
                 base_cooldown=0,
-                likelihood=0.6,
+                likelihood=3,
                 cooldown=0,
             ),
             "turn_left": self.Action(
@@ -82,7 +89,7 @@ class HallwayDesigner:
         the area, it doesn't collide with itself e.g."""
         neighbours = head.neighbours()
         for neighbour in neighbours:
-            if not self.dungeon_area.is_inside_area(neighbour):
+            if not self.dungeon_area.is_inside_mask(neighbour):
                 return False
         # TODO childless area without child borders in the future.
         if not self.dungeon_area.in_childless_area(head):
@@ -192,6 +199,5 @@ class HallwayDesigner:
             except CannotPerformAction:
                 break
         origin, hallway = self._create_hallway()
-        print(self.length)
         self._reset()
         return origin, hallway

@@ -1,19 +1,19 @@
 import numpy as np
 from tcod import tcod
 
-from hamingja_dungeon.utils.area import Area
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
-from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.dungeon_elements.shape import Shape
+from hamingja_dungeon.dungeon_elements.sector import Sector
+from hamingja_dungeon.dungeon_elements.area import Area
 from hamingja_dungeon.tile_types import floor
 from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer import (
     Renderer,
 )
 
-full_square = Area.from_array(
+full_square = Shape.from_array(
     np.array([[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
 )
 
-square = Area.from_array(
+square = Shape.from_array(
     np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -28,7 +28,7 @@ square = Area.from_array(
     )
 )
 
-l_shape = Area.from_array(
+l_shape = Shape.from_array(
     np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -44,7 +44,7 @@ l_shape = Area.from_array(
     )
 )
 
-c_shape = Area.from_array(
+c_shape = Shape.from_array(
     np.array(
         [
             [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -60,7 +60,7 @@ c_shape = Area.from_array(
     )
 )
 
-hole_shape = Area.from_array(
+hole_shape = Shape.from_array(
     np.array(
         [
             [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -76,7 +76,7 @@ hole_shape = Area.from_array(
     )
 )
 
-big_area = Area.from_array(
+big_area = Shape.from_array(
     np.array(
         [
             [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -107,17 +107,17 @@ def get_test_areas() -> dict:
     }
 
 
-def get_test_dungeon_objects() -> dict[str, DungeonObject]:
+def get_test_dungeon_objects() -> dict[str, Area]:
     result = {}
     for name, area in get_test_areas().items():
-        dungeon_object = DungeonObject(area.size, fill_value=floor)
+        dungeon_object = Area(area.size, fill_value=floor)
         dungeon_object.mask = area.mask
         result[name] = dungeon_object
     return result
 
 
-def get_test_dungeon_area() -> DungeonArea:
-    dungeon_area = DungeonArea(big_area.size, fill_value=floor)
+def get_test_dungeon_area() -> Sector:
+    dungeon_area = Sector(big_area.size, fill_value=floor)
     dungeon_area.mask = big_area.mask
     return dungeon_area
 
@@ -149,7 +149,7 @@ def print_test_dungeon_objects(func, *args):
         print_dungeon_object(dungeon_object)
 
 
-def print_dungeon_object(dungeon_object: DungeonObject) -> None:
+def print_dungeon_object(dungeon_object: Area) -> None:
     renderer = Renderer(dungeon_object)
     console = tcod.console.Console(height=dungeon_object.h, width=dungeon_object.w)
     renderer.render_console(console)

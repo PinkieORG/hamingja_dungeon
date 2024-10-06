@@ -4,9 +4,9 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
-from hamingja_dungeon.dungeon_elements.dungeon_object import DungeonObject
+from hamingja_dungeon.dungeon_elements.area import Area
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.morphology.morphology import prune
 from hamingja_dungeon.utils.direction import Direction
@@ -16,7 +16,7 @@ from hamingja_dungeon.utils.utils import circle_mask
 ROOM_MIN_SIZE = (3, 3)
 
 
-class Room(DungeonObject):
+class Room(Area):
     """Represent a room that can be inserted into dungeon area."""
 
     def __init__(
@@ -36,7 +36,7 @@ class Room(DungeonObject):
             fill_value=fill_value,
         )
         self.draw_border(border_fill_value)
-        self.room_anchor = self.connected_border()
+        self.entrypoints = self.connected_border()
 
 
 class LRoom(Room):
@@ -65,14 +65,14 @@ class LRoom(Room):
             )
         )
 
-        filling = Area(dim_range.sample())
+        filling = Shape(dim_range.sample())
         fit_area = self.fit_in(filling, self.corners_in_direction(direction))
         if fit_area.is_empty():
             raise EmptyFitArea("Cannot fit the filling.")
         origin = fit_area.sample()
-        self.remove_area(origin, filling)
+        self.remove_shape(origin, filling)
         self.draw_border(border_fill_value)
-        self.room_anchor = self.connected_border()
+        self.entrypoints = self.connected_border()
 
 
 class CircleRoom(Room):
@@ -98,4 +98,4 @@ class CircleRoom(Room):
         room_anchor = deepcopy(self.mask)
         room_anchor[1:-1, 1:-1] = False
         room_anchor = prune(room_anchor)
-        self.room_anchor = Area.from_array(room_anchor)
+        self.entrypoints = Shape.from_array(room_anchor)

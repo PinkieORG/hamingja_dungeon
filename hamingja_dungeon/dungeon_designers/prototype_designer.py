@@ -1,25 +1,25 @@
 import random
+import igraph as ig
+from hamingja_dungeon.dungeon_elements.hallway import Hallway
+from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.hallway_designers.hallway_designer import (
     DesignerError,
     HallwayDesigner,
 )
 from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.dungeon_elements.room import CircleRoom, LRoom, Room
-from hamingja_dungeon.dungeon_designers.abstract_dungeon_area_designer import (
-    AbstractDungeonAreaDesigner,
-)
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
     DungeonAreaConfig,
 )
 from hamingja_dungeon.tile_types import carpet
 
 
-class PrototypeDesigner(AbstractDungeonAreaDesigner):
+# TODO look for entrances and not put new ones close to the already placed.
+class PrototypeDesigner:
     def __init__(self, config: DungeonAreaConfig):
-        super().__init__(config)
         self._to_process: list[int] = []
         self.hallway_designer = None
         if config.room_size_method == "factor":
@@ -35,27 +35,27 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
-        if num < 0.8:
+        if num < 0.7:
             room = Room(size)
-        elif num < 0.9:
+        elif num < 0.8:
             room = LRoom(size)
         else:
             room = CircleRoom(min(size))
         return room
 
-    def _create_hallway(self, dungeon_area: DungeonArea, room_id: int):
+    def _create_hallway(self, dungeon_area: Sector, room_id: int):
         room = dungeon_area.get_child(room_id).object
         if not isinstance(room, Room):
             raise ValueError("Hallway can be created only from a room.")
         room_origin = dungeon_area.get_child(room_id).origin
 
-        anchor_point = room.room_anchor.sample()
+        anchor_point = room.entrypoints.sample()
         origin_point = room_origin + anchor_point
         return self.hallway_designer.design_hallway(
             origin_point, Direction.get_all_directions()
         )
 
-    def _prepare(self, dungeon_area: DungeonArea):
+    def _prepare(self, dungeon_area: Sector):
         start_room = self._get_room()
         start_room.draw_inside(carpet)
         fit_area = dungeon_area.fit_in(start_room)
@@ -66,18 +66,48 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
         self._to_process.append(id)
         self.hallway_designer = HallwayDesigner(dungeon_area)
 
-    def _add_room(self, dungeon_area: DungeonArea):
+    def connect_nearby(self, sector: Sector, room_id: int) -> None:
+        child = sector.get_child(room_id)
+        room = child.object
+        origin = child.origin
+        if not isinstance(room, Room):
+            raise ValueError("Can connect only rooms.")
+
+        entrypoints = Shape.empty(sector.size).insert_shape(origin, room.entrypoints)
+
+        nearby = set()
+        for entrypoint in entrypoints.points():
+            ids = sector.get_children_at(entrypoint)
+            ids.remove(room_id)
+            for id in ids:
+                child = sector.get_child(id)
+                if not isinstance(child.object, Room):
+                    continue
+                child_entrypoints = Shape.empty(sector.size).insert_shape(
+                    child.origin, child.object.entrypoints
+                )
+                if not (entrypoints & child_entrypoints).is_empty():
+                    nearby.add(id)
+
+        for nearby_id in nearby:
+            distance = sector.room_graph.distances(room_id, nearby_id)[0][0]
+            if distance < 3:
+                continue
+            sector.make_entrance(room_id, nearby_id)
+
+    def _add_room(self, sector: Sector):
         if len(self._to_process) == 0:
             return -1
         tries = 0
         neighbour_id = random.choice(self._to_process)
         while tries < 2:
             num = random.random()
-            if num < 0.8:
+            if num < 0.6 or isinstance(sector.get_child(neighbour_id).object, Hallway):
                 room = self._get_room()
                 try:
-                    new_room_id = dungeon_area.add_room_adjacent(room, neighbour_id)
-                    dungeon_area.make_entrance(neighbour_id, new_room_id)
+                    new_room_id = sector.add_room_adjacent(room, neighbour_id)
+                    # sector.make_entrance(neighbour_id, new_room_id)
+                    self.connect_nearby(sector, new_room_id)
                 except EmptyFitArea:
                     tries += 1
                     continue
@@ -85,10 +115,11 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
                 return 1
             else:
                 try:
-                    origin, hallway = self._create_hallway(dungeon_area, neighbour_id)
-                    print(origin)
-                    new_room_id = dungeon_area.add_room(origin, hallway)
-                    dungeon_area.make_entrance(neighbour_id, new_room_id)
+                    origin, hallway = self._create_hallway(sector, neighbour_id)
+                    new_room_id = sector.add_room(origin, hallway)
+                    # sector.make_entrance(neighbour_id, new_room_id)
+                    self.connect_nearby(sector, new_room_id)
+
                 except DesignerError:
                     tries += 1
                     continue
@@ -97,7 +128,8 @@ class PrototypeDesigner(AbstractDungeonAreaDesigner):
         self._to_process.remove(neighbour_id)
         return 1
 
-    def populate(self, dungeon_area: DungeonArea):
+    # TODO populate with iterations.
+    def populate(self, dungeon_area: Sector):
         self._prepare(dungeon_area)
         while dungeon_area.fullness() < 0.7:
             code = self._add_room(dungeon_area)

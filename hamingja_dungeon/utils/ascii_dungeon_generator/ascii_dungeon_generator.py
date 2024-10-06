@@ -1,6 +1,6 @@
 from tcod import tcod
 
-from hamingja_dungeon.dungeon_elements.dungeon_area import DungeonArea
+from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.dungeon_designers.prototype_designer import PrototypeDesigner
 from hamingja_dungeon.utils.ascii_dungeon_generator.ascii_dungeon import ASCIIDungeon
 from hamingja_dungeon.utils.ascii_dungeon_generator.config.ascii_dungeon_config import (
@@ -17,7 +17,7 @@ class ASCIIDungeonGenerator:
         self.generated_count = 1
 
     def generate(self):
-        dungeon_area = DungeonArea(self.config.dungeon_area.size)
+        dungeon_area = Sector(self.config.dungeon_area.size)
 
         generator = PrototypeDesigner(self.config.dungeon_area)
         generator.populate(dungeon_area)

@@ -1,13 +1,14 @@
 from __future__ import annotations
 import numpy as np
 from scipy.ndimage import binary_dilation
-from hamingja_dungeon.utils.area import Area
+from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
 from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
 from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
 
 
+# TODO create a common super class for hallway and room (region, section?) since hallway is not really a room, is it?
 class Hallway(Room):
     """Represents a hallway: a path-like room surrounded by walls."""
 
@@ -27,10 +28,10 @@ class Hallway(Room):
         borderless[1:-1, 1:-1] = path
         with_border = binary_dilation(borderless, structure=SQUARE)
         self.mask = with_border
-        self.hallway_border = Area.from_array(with_border ^ borderless)
+        self.hallway_border = Shape.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
 
         endpoints = get_endpoints(borderless)
-        self.room_anchor = Area.from_array(
+        self.entrypoints = Shape.from_array(
             binary_dilation(endpoints, structure=PLUS) & self.border().mask
         )

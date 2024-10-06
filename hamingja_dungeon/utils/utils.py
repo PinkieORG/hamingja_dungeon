@@ -22,6 +22,6 @@ def circle_mask(dim: int) -> np.array:
     without_middle = np.ones((circle_dim, circle_dim))
     without_middle[circle_dim // 2, circle_dim // 2] = 0
     distance_map = distance_transform_edt(without_middle)
-    circle = distance_map <= circle_dim // 2
+    circle = distance_map < circle_dim // 2
     circle = prune(circle)
     return circle[1:-1, 1:-1]
