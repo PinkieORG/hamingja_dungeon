@@ -1,6 +1,8 @@
 from __future__ import annotations
 import numpy as np
 from scipy.ndimage import binary_dilation
+from skimage.measure import label
+
 from hamingja_dungeon.dungeon_elements.shape import Shape
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
 from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
@@ -26,14 +28,23 @@ class Hallway(Room):
             fill_value=fill_value,
             border_fill_value=border_fill_value,
         )
+
         borderless = np.zeros(new_size).astype(bool)
         borderless[1:-1, 1:-1] = path
         with_border = binary_dilation(borderless, structure=SQUARE)
         self.mask = with_border
         self.hallway_border = Shape.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
-
-        endpoints = get_endpoints(borderless)
+        self.endpoints = get_endpoints(borderless)
         self.entrypoints = Shape.from_array(
-            binary_dilation(endpoints, structure=PLUS) & self.border().mask
+            binary_dilation(self.endpoints, structure=PLUS) & self.border().mask
         )
+
+    def has_dead_end(self):
+        labeled, count = label(self.endpoints, background=0, return_num=True)
+        entrances = self.get_entrances_area()
+        for component_label in range(1, count + 1):
+            end = np.where(labeled == component_label, 1, 0)
+            if not np.any(binary_dilation(end, structure=PLUS) & entrances.mask):
+                return True
+        return False
