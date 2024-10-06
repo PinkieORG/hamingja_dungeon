@@ -54,7 +54,6 @@ class Sector(Area):
             raise EmptyFitArea("The new room cannot be fitted.")
         origin = fit_area.sample()
         id = self.add_room(origin, room)
-        self.room_graph.add_edges([(id, neighbour_id)])
         return id
 
     def make_entrance(
@@ -91,3 +90,6 @@ class Sector(Area):
         entrance = Area((1, 1), fill_value=fill_value)
         first_room.add_child(entrance_point - first.origin, entrance)
         second_room.add_child(entrance_point - second.origin, entrance)
+
+        self.room_graph.add_edges([(first_id, second_id)])
+
