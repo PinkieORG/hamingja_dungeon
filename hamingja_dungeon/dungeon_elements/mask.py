@@ -7,6 +7,10 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
+from hamingja_dungeon.utils.checks.array_checks import check_array_is_two_dimensional, \
+    check_array_is_same_shape
+from hamingja_dungeon.utils.checks.mask_checks import check_vector_is_positive, \
+    check_masks_are_same_size
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.morphology.structure_elements import (OUTSIDE_CORNERS,
                                                                   SQUARE, HORIZONTAL,
@@ -25,8 +29,7 @@ class Mask:
 
     def _crop_array(self, origin: Vector, size: Tuple[int, int]) -> np.array:
         """Returns a cropped array from the given origin given by the size."""
-        if not origin.is_positive():
-            raise ValueError("The origin of the shape has to be positive.")
+        check_vector_is_positive(origin)
         return self.array[origin.y : origin.y + size[0], origin.x : origin.x + size[1]]
 
     def _set_array_values(self, origin: Vector, mask: Mask, set_to: bool) -> None:
@@ -38,17 +41,15 @@ class Mask:
 
     @staticmethod
     def from_array(in_array: np.ndarray) -> Mask:
-        """Creates a new shape from a numpy array."""
-        mask = np.array(in_array, dtype=bool)
-        if mask.ndim != 2:
-            raise ValueError("The given array has to be 2 dimensional.")
-        result = Mask((mask.shape[0], mask.shape[1]))
-        result.array = mask
+        """Creates a new mask from a numpy array."""
+        check_array_is_two_dimensional(in_array)
+        result = Mask((in_array.shape[0], in_array.shape[1]))
+        result.array = np.array(in_array, dtype=bool)
         return result
 
     @staticmethod
-    def empty(size: Tuple[int, int]) -> Mask:
-        """Creates an empty shape of the given size."""
+    def empty_mask(size: Tuple[int, int]) -> Mask:
+        """Creates an empty mask of the given size."""
         shape = Mask(size)
         shape.array.fill(False)
         return shape
@@ -70,59 +71,47 @@ class Mask:
         return self._array
 
     @array.setter
-    def array(self, new_array: np.array) -> None:
-        if new_array.ndim != 2:
-            raise ValueError("The given array has to be 2 dimensional.")
-        if self.array.shape != new_array.shape:
-            raise ValueError("The given array has to have a same shape.")
-        if self.array.dtype != new_array.dtype:
-            raise ValueError("New array needs to have a bool dtype.")
+    def array(self, new_array: np.ndarray) -> None:
+        check_array_is_two_dimensional(new_array)
+        check_array_is_same_shape(self.array, new_array)
         self._array = new_array
 
     def __str__(self) -> str:
-        return str(self.array)
+        return str(np.where(self._array, "■", "□"))
 
     def __and__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         return Mask.from_array(self.array & other.array)
 
     def __iand__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         self.array &= other.array
         return self
 
     def __or__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         return Mask.from_array(self.array | other.array)
 
     def __ior__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         self.array |= other.array
         return self
 
     def __xor__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         return Mask.from_array(self.array ^ other.array)
 
     def __ixor__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         self.array ^= other.array
         return self
 
     def __sub__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         return Mask.from_array(self.array & ~other.array)
 
     def __isub__(self, other: Mask) -> Mask:
-        if self.size != other.size:
-            raise ValueError("Shapes need to have the same sizes.")
+        check_masks_are_same_size(self, other)
         self.array &= ~other.array
         return self
 
@@ -131,32 +120,22 @@ class Mask:
 
     def intersection(
         self,
-        origin_first: Vector,
-        first: Mask,
-        origin_second: Vector,
-        second: Mask,
+        first_origin: Vector,
+        first_mask: Mask,
+        second_origin: Vector,
+        second_mask: Mask,
     ) -> Mask:
         """Returns an intersection of two shapes as if they have been placed according
         to the given origins."""
-        if not origin_first.is_positive() or not origin_second.is_positive():
-            raise ValueError("The origin of the shape has to be positive.")
-        first_larger = Mask.empty(self.size)
-        first_larger.insert_shape(origin_first, first)
-
-        second_larger = Mask.empty(self.size)
-        second_larger.insert_shape(origin_second, second)
-
-        return first_larger & second_larger
+        first_embedded = Mask.empty_mask(self.size)
+        first_embedded.insert_shape(first_origin, first_mask)
+        second_embedded = Mask.empty_mask(self.size)
+        second_embedded.insert_shape(second_origin, second_mask)
+        return first_embedded & second_embedded
 
     def volume(self) -> int:
         """Returns a number of true points."""
         return np.count_nonzero(self.array)
-
-    # TODO just make it __str__.
-    def print(self) -> None:
-        """Convenient print."""
-        image = np.where(self._array, "■", "□")
-        print(image)
 
     def inside_bbox(self, p: Vector) -> bool:
         """Checks whether a point is inside the bounding box of the shape."""
@@ -196,7 +175,7 @@ class Mask:
         if thickness < 0:
             raise ValueError("Thickness cannot be negative.")
         if thickness == 0:
-            return Mask.empty(self.size)
+            return Mask.empty_mask(self.size)
         if direction is None:
             return Mask.from_array(
                 self.array
@@ -215,7 +194,7 @@ class Mask:
 
     def corners(self) -> Mask:
         """Returns all the corners."""
-        result = Mask.empty(self.size)
+        result = Mask.empty_mask(self.size)
         for dir in Direction.get_all_directions():
             result |= self.corners_in_direction(dir)
         return result
@@ -238,7 +217,7 @@ class Mask:
 
     def outside_corners(self) -> Mask:
         """Returns all the outside corners."""
-        result = Mask.empty(self.size)
+        result = Mask.empty_mask(self.size)
         for dir in Direction.get_all_directions():
             result |= self.outside_corners_in_direction(dir)
         return result

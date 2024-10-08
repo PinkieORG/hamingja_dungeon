@@ -147,9 +147,9 @@ def print_test_areas(func, *args):
     for name, area in areas.items():
         print_name(name)
         print("original: ")
-        area.print()
+        print(area)
         print("result: ")
-        func(area, *args).print()
+        print(func(area, *args))
 
 
 def print_test_dungeon_objects(func, *args):

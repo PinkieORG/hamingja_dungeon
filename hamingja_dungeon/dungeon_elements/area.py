@@ -44,7 +44,7 @@ class Area(Mask):
     def child_shape(self, id: int) -> Mask:
         """Returns a shape of the child given by its id. The result has the same size
         as the area."""
-        result = Mask.empty(self.size)
+        result = Mask.empty_mask(self.size)
         child = self.get_child(id)
         origin = child.origin
         object = child.object
@@ -59,7 +59,7 @@ class Area(Mask):
         """Returns a combined shapes of the children."""
         if without is None:
             without = []
-        result = Mask.empty(self.size)
+        result = Mask.empty_mask(self.size)
         children = {
             key: value for key, value in self.children.items() if key not in without
         }
@@ -171,7 +171,7 @@ class Area(Mask):
             )
         neighbour = self.get_child(neighbour_id)
 
-        anchor = Mask.empty(self.size).insert_shape(
+        anchor = Mask.empty_mask(self.size).insert_shape(
             neighbour.origin, neighbour.object.border()
         )
         without_children = self.childless_shape().insert_shape(

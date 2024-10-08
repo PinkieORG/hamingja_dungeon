@@ -52,7 +52,7 @@ class Room(Area):
         self.entrances.remove(id)
 
     def get_entrances_area(self) -> Mask:
-        result = Area.empty(self.size)
+        result = Area.empty_mask(self.size)
         for entrance_id in self.entrances:
             entrance = self.get_child(entrance_id)
             result.insert_shape(entrance.origin, entrance.object)

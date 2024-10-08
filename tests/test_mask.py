@@ -1,8 +1,7 @@
+from __future__ import annotations
 from unittest import TestCase
 
 import numpy as np
-from numpy.ma.core import MaskType
-
 from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.vector import Vector
@@ -14,7 +13,7 @@ class TestMask(TestCase):
         mask = Mask((5,5))
         mask._set_array_values(Vector(1,1), Mask((5,5)), False)
         mask._set_array_values(Vector(6,6), Mask((5,5)), False)
-        mask.print()
+        print(mask)
 
     def test_border(self):
         print("border test:")
@@ -48,11 +47,11 @@ class TestMask(TestCase):
         for name, area in areas.items():
             print_name(name)
             print("original: ")
-            area.print()
+            print(area)
             print("border (anchor): ")
-            area.border().print()
+            print(area.border())
             print("result: ")
-            area.fit_in(to_fit, area.border()).print()
+            print(area.fit_in(to_fit, area.border()))
 
     def test_fit_in_two_anchor(self):
         to_fit = Mask.from_array(np.array([[1, 0], [1, 0], [1, 1]]))
@@ -61,8 +60,8 @@ class TestMask(TestCase):
         for name, area in areas.items():
             print_name(name)
             print("original: ")
-            area.print()
+            print(area)
             print("border (anchor): ")
-            area.border().print()
+            print(area.border())
             print("result: ")
-            area.fit_in(to_fit, area.border(), to_fit_anchor).print()
+            print(area.fit_in(to_fit, area.border(), to_fit_anchor))

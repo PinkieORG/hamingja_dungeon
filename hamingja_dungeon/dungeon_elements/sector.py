@@ -37,7 +37,7 @@ class Sector(Area):
         if not isinstance(neighbour.object, Room):
             raise ValueError("The neighbour of the room has to be a room.")
 
-        anchor = Mask.empty(self.size).insert_shape(
+        anchor = Mask.empty_mask(self.size).insert_shape(
             neighbour.origin, neighbour.object.entrypoints
         )
         without_children = (~self.children_shapes()).insert_shape(
