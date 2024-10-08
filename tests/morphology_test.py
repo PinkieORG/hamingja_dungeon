@@ -10,5 +10,5 @@ class PrintTests(unittest.TestCase):
         print("original: ")
         border.print()
         print("result: ")
-        border.mask = prune(border.mask, iterations=2)
+        border.array = prune(border.array, iterations=2)
         border.print()

@@ -24,19 +24,19 @@ class Mask:
     def __init__(self, size: Tuple[int, int]):
         if size[0] <= 0 or size[1] <= 0:
             raise ValueError("The size has to be positive.")
-        self._mask = np.full(size, fill_value=True, dtype=np.bool)
+        self._array = np.full(size, fill_value=True, dtype=np.bool)
 
     def _set_mask_values(self, origin: Vector, shape: Mask, set_to: bool) -> None:
         """Sets values defined by the true values of the new mask inserted to
         the given origin."""
         if not origin.is_positive():
             raise ValueError("The origin of the shape has to be positive.")
-        afflicted_area = self.mask[
+        afflicted_area = self.array[
             origin.y : origin.y + shape.h, origin.x : origin.x + shape.w
         ]
         if 0 in afflicted_area.shape:
             return
-        cropped_mask = shape.mask[
+        cropped_mask = shape.array[
             0 : afflicted_area.shape[0], 0 : afflicted_area.shape[1]
         ]
         afflicted_area[cropped_mask] = set_to
@@ -48,14 +48,14 @@ class Mask:
         if mask.ndim != 2:
             raise ValueError("The given array has to be 2 dimensional.")
         result = Mask((mask.shape[0], mask.shape[1]))
-        result.mask = mask
+        result.array = mask
         return result
 
     @staticmethod
     def empty(size: Tuple[int, int]) -> Mask:
         """Creates an empty shape of the given size."""
         shape = Mask(size)
-        shape.mask.fill(False)
+        shape.array.fill(False)
         return shape
 
     @property
@@ -64,75 +64,75 @@ class Mask:
 
     @property
     def h(self) -> int:
-        return self.mask.shape[0]
+        return self.array.shape[0]
 
     @property
     def w(self) -> int:
-        return self.mask.shape[1]
+        return self.array.shape[1]
 
     @property
-    def mask(self) -> np.ndarray:
-        return self._mask
+    def array(self) -> np.ndarray:
+        return self._array
 
-    @mask.setter
-    def mask(self, new_array: np.array) -> None:
+    @array.setter
+    def array(self, new_array: np.array) -> None:
         if new_array.ndim != 2:
             raise ValueError("The given array has to be 2 dimensional.")
-        if self.mask.shape != new_array.shape:
+        if self.array.shape != new_array.shape:
             raise ValueError("The given array has to have a same shape.")
-        if self.mask.dtype != new_array.dtype:
+        if self.array.dtype != new_array.dtype:
             raise ValueError("New array needs to have a bool dtype.")
-        self._mask = new_array
+        self._array = new_array
 
     def __str__(self) -> str:
-        return str(self.mask)
+        return str(self.array)
 
     def __and__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        return Mask.from_array(self.mask & other.mask)
+        return Mask.from_array(self.array & other.array)
 
     def __iand__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        self.mask &= other.mask
+        self.array &= other.array
         return self
 
     def __or__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        return Mask.from_array(self.mask | other.mask)
+        return Mask.from_array(self.array | other.array)
 
     def __ior__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        self.mask |= other.mask
+        self.array |= other.array
         return self
 
     def __xor__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        return Mask.from_array(self.mask ^ other.mask)
+        return Mask.from_array(self.array ^ other.array)
 
     def __ixor__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        self.mask ^= other.mask
+        self.array ^= other.array
         return self
 
     def __sub__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        return Mask.from_array(self.mask & ~other.mask)
+        return Mask.from_array(self.array & ~other.array)
 
     def __isub__(self, other: Mask) -> Mask:
         if self.size != other.size:
             raise ValueError("Shapes need to have the same sizes.")
-        self.mask &= ~other.mask
+        self.array &= ~other.array
         return self
 
     def __invert__(self) -> Mask:
-        return Mask.from_array(~self.mask)
+        return Mask.from_array(~self.array)
 
     def intersection(
         self,
@@ -155,12 +155,12 @@ class Mask:
 
     def volume(self) -> int:
         """Returns a number of true points."""
-        return np.count_nonzero(self.mask)
+        return np.count_nonzero(self.array)
 
     # TODO just make it __str__.
     def print(self) -> None:
         """Convenient print."""
-        image = np.where(self._mask, "■", "□")
+        image = np.where(self._array, "■", "□")
         print(image)
 
     def inside_bbox(self, p: Vector) -> bool:
@@ -171,18 +171,18 @@ class Mask:
         """Checks whether a point is inside the mask."""
         if not self.inside_bbox(p):
             return False
-        return bool(self.mask[p.y, p.x])
+        return bool(self.array[p.y, p.x])
 
     def is_subset_of(self, other: Mask) -> bool:
         """Checks whether the shape is subset of another."""
         if self.size != other.size:
             return False
-        return np.all(other.mask & self.mask == self.mask)
+        return np.all(other.array & self.array == self.array)
 
     # TODO rename this
     def is_empty(self) -> bool:
         """Return true if there are no true elements"""
-        return not np.any(self.mask)
+        return not np.any(self.array)
 
     def insert_shape(self, origin: Vector, to_put: Mask) -> Mask:
         """Inserts another shape inside with respect to its origin and mask."""
@@ -204,8 +204,8 @@ class Mask:
             return Mask.empty(self.size)
         if direction is None:
             return Mask.from_array(
-                self.mask
-                & ~binary_erosion(self.mask, structure=SQUARE, iterations=thickness)
+                self.array
+                & ~binary_erosion(self.array, structure=SQUARE, iterations=thickness)
             )
         structure = VERTICAL if direction.is_vertical() else HORIZONTAL
         if direction == direction.EAST:
@@ -215,7 +215,7 @@ class Mask:
         else:
             origin = (0, 0)
         return Mask.from_array(
-            self.mask & ~binary_erosion(self.mask, structure, origin=origin)
+            self.array & ~binary_erosion(self.array, structure, origin=origin)
         )
 
     def corners(self) -> Mask:
@@ -230,7 +230,7 @@ class Mask:
         its clockwise neighbour specifies the corner orientation."""
         corner = INSIDE_CORNERS.get(direction)
         return Mask.from_array(
-            binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
+            binary_hit_or_miss(self.array, structure1=corner[0], origin1=corner[1])
         )
 
     def outside_corners_in_direction(self, direction: Direction) -> Mask:
@@ -238,7 +238,7 @@ class Mask:
         its clockwise neighbour specifies the corner orientation."""
         corner = OUTSIDE_CORNERS.get(direction)
         return Mask.from_array(
-            binary_hit_or_miss(self.mask, structure1=corner[0], origin1=corner[1])
+            binary_hit_or_miss(self.array, structure1=corner[0], origin1=corner[1])
         )
 
     def outside_corners(self) -> Mask:
@@ -255,7 +255,7 @@ class Mask:
     def points(self) -> list[Vector]:
         """Returns a list of all true valued points."""
         result = []
-        for y, x in np.argwhere(self.mask):
+        for y, x in np.argwhere(self.array):
             result.append(Vector(y, x))
         return result
 
@@ -263,7 +263,7 @@ class Mask:
         """Samples and returns a position of a true value within the shape."""
         if self.is_empty():
             raise ValueError("Cannot sample from an empty shape.")
-        sample = random.choice(np.argwhere(self.mask))
+        sample = random.choice(np.argwhere(self.array))
         return Vector(sample[0], sample[1])
 
     def fit_in(
@@ -290,16 +290,16 @@ class Mask:
             raise ValueError("The object to fit has to be a superset of its anchor.")
 
         normalised_origin = (-(to_fit.h // 2), -(to_fit.w // 2))
-        structure = to_fit.mask
+        structure = to_fit.array
         # For dilation the structure and its origin needs to be flipped.
         # Scipy library thing.
         flipped_origin = ((to_fit.h - 1) // 2, (to_fit.w - 1) // 2)
-        flipped_structure = np.flip(to_fit_anchor.mask)
+        flipped_structure = np.flip(to_fit_anchor.array)
         fits_in = binary_erosion(
-            self.mask, structure=structure, origin=normalised_origin
+            self.array, structure=structure, origin=normalised_origin
         )
         touches_anchor = binary_dilation(
-            anchor.mask, structure=flipped_structure, origin=flipped_origin
+            anchor.array, structure=flipped_structure, origin=flipped_origin
         )
         return Mask.from_array(fits_in & touches_anchor)
 

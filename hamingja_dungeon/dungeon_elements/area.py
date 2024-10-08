@@ -48,11 +48,11 @@ class Area(Mask):
         child = self.get_child(id)
         origin = child.origin
         object = child.object
-        afflicted_area = result.mask[
+        afflicted_area = result.array[
                          origin.y: origin.y + object.h, origin.x: origin.x + object.w
                          ]
 
-        afflicted_area[object.mask] = True
+        afflicted_area[object.array] = True
         return result
 
     def children_shapes(self, without: [int] = None) -> Mask:
@@ -66,21 +66,21 @@ class Area(Mask):
         for child in children.values():
             origin = child.origin
             object = child.object
-            afflicted_area = result.mask[
+            afflicted_area = result.array[
                 origin.y : origin.y + object.h, origin.x : origin.x + object.w
             ]
 
-            afflicted_area[object.mask] = True
+            afflicted_area[object.array] = True
         return result
 
     def childless_shape(self) -> Mask:
         """Returns a shape with the children removed."""
-        result = Mask.from_array(self.mask)
+        result = Mask.from_array(self.array)
         return result & ~self.children_shapes()
 
     def inner_shape(self) -> Mask:
         """Returns a shape without the border."""
-        return Mask.from_array(self.mask) - self.border()
+        return Mask.from_array(self.array) - self.border()
 
     def draw(self, value: np.ndarray, mask: Mask = None) -> None:
         """Will draw on the area with the given value with respect to the
@@ -91,7 +91,7 @@ class Area(Mask):
             raise ValueError("Fill value has to have the tile dtype.")
         if mask.size != self.size:
             raise ValueError("The mask has to have the the size of the area.")
-        self.tiles[mask.mask] = value
+        self.tiles[mask.array] = value
 
     def draw_border(self, value: np.ndarray, thickness: int = 1) -> None:
         """Will draw the border of the given thickness with the given value."""
@@ -113,7 +113,7 @@ class Area(Mask):
         afflicted_tiles = self.tiles[p.y : p.y + area.h, p.x : p.x + area.w]
         if 0 in afflicted_tiles.shape:
             return
-        cropped_mask = area.mask[
+        cropped_mask = area.array[
             0 : afflicted_tiles.shape[0], 0 : afflicted_tiles.shape[1]
         ]
         cropped_tiles = area.tiles[

@@ -125,14 +125,14 @@ def get_test_dungeon_objects() -> dict[str, Area]:
     result = {}
     for name, area in get_test_areas().items():
         dungeon_object = Area(area.size, fill_value=floor)
-        dungeon_object.mask = area.mask
+        dungeon_object.array = area.array
         result[name] = dungeon_object
     return result
 
 
 def get_test_sector() -> Sector:
     dungeon_area = Sector(big_area.size, fill_value=floor)
-    dungeon_area.mask = big_area.mask
+    dungeon_area.array = big_area.array
     return dungeon_area
 
 

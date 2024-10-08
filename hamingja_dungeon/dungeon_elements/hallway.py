@@ -47,6 +47,6 @@ class Hallway(Room):
         entrances = self.get_entrances_area()
         for component_label in range(1, count + 1):
             end = np.where(labeled == component_label, 1, 0)
-            if not np.any(binary_dilation(end, structure=PLUS) & entrances.mask):
+            if not np.any(binary_dilation(end, structure=PLUS) & entrances.array):
                 return True
         return False
