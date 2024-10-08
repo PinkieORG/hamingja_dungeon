@@ -1,13 +1,21 @@
-import unittest
+from unittest import TestCase
 
 import numpy as np
+from numpy.ma.core import MaskType
 
 from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.direction import Direction
+from hamingja_dungeon.utils.vector import Vector
 from test_utils import print_test_areas, get_test_areas, print_name
 
 
-class AreaPrintTests(unittest.TestCase):
+class TestMask(TestCase):
+    def test__set_array_values(self):
+        mask = Mask((5,5))
+        mask._set_array_values(Vector(1,1), Mask((5,5)), False)
+        mask._set_array_values(Vector(6,6), Mask((5,5)), False)
+        mask.print()
+
     def test_border(self):
         print("border test:")
         print_test_areas(Mask.border)
