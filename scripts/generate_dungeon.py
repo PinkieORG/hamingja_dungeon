@@ -37,3 +37,4 @@ if __name__ == "__main__":
 
     dungeon = generator.generate()
     dungeon.save_as(args.output_file)
+    print(dungeon.content)

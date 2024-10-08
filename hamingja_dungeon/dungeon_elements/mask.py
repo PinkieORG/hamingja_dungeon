@@ -7,15 +7,12 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
-from hamingja_dungeon.utils.morphology.structure_elements import (
-    OUTSIDE_CORNERS,
-    SQUARE,
-    HORIZONTAL,
-    VERTICAL,
-    INSIDE_CORNERS,
-)
-from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.utils.direction import Direction
+from hamingja_dungeon.utils.morphology.structure_elements import (OUTSIDE_CORNERS,
+                                                                  SQUARE, HORIZONTAL,
+                                                                  VERTICAL,
+                                                                  INSIDE_CORNERS, )
+from hamingja_dungeon.utils.vector import Vector
 
 
 class Mask:
@@ -26,19 +23,17 @@ class Mask:
             raise ValueError("The size has to be positive.")
         self._array = np.full(size, fill_value=True, dtype=np.bool)
 
-    def _set_mask_values(self, origin: Vector, shape: Mask, set_to: bool) -> None:
-        """Sets values defined by the true values of the new mask inserted to
-        the given origin."""
+    def _crop_array(self, origin: Vector, size: Tuple[int, int]) -> np.array:
+        """Returns a cropped array from the given origin given by the size."""
         if not origin.is_positive():
             raise ValueError("The origin of the shape has to be positive.")
-        afflicted_area = self.array[
-            origin.y : origin.y + shape.h, origin.x : origin.x + shape.w
-        ]
-        if 0 in afflicted_area.shape:
-            return
-        cropped_mask = shape.array[
-            0 : afflicted_area.shape[0], 0 : afflicted_area.shape[1]
-        ]
+        return self.array[origin.y : origin.y + size[0], origin.x : origin.x + size[1]]
+
+    def _set_array_values(self, origin: Vector, mask: Mask, set_to: bool) -> None:
+        """Sets values defined by the true values of the new mask inserted to
+        the given origin."""
+        afflicted_area = self._crop_array(origin, mask.size)
+        cropped_mask = mask._crop_array(Vector(0, 0), afflicted_area.shape)
         afflicted_area[cropped_mask] = set_to
 
     @staticmethod
@@ -184,15 +179,15 @@ class Mask:
         """Return true if there are no true elements"""
         return not np.any(self.array)
 
-    def insert_shape(self, origin: Vector, to_put: Mask) -> Mask:
+    def insert_shape(self, origin: Vector, to_insert: Mask) -> Mask:
         """Inserts another shape inside with respect to its origin and mask."""
-        self._set_mask_values(origin, to_put, True)
+        self._set_array_values(origin, to_insert, True)
         return self
 
     def remove_shape(self, origin: Vector, to_remove: Mask) -> Mask:
         """Removes another shape defined by its true values with respect to its
         origin."""
-        self._set_mask_values(origin, to_remove, False)
+        self._set_array_values(origin, to_remove, False)
         return self
 
     def border(self, thickness: int = 1, direction: Direction = None) -> Mask:
