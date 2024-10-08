@@ -32,12 +32,12 @@ class Hallway(Room):
         borderless = np.zeros(new_size).astype(bool)
         borderless[1:-1, 1:-1] = path
         with_border = binary_dilation(borderless, structure=SQUARE)
-        self.mask = with_border
+        self.array = with_border
         self.hallway_border = Mask.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
         self.endpoints = get_endpoints(borderless)
         self.entrypoints = Mask.from_array(
-            binary_dilation(self.endpoints, structure=PLUS) & self.border().mask
+            binary_dilation(self.endpoints, structure=PLUS) & self.border().array
         )
 
     # TODO Make about localisation not only binary check.
