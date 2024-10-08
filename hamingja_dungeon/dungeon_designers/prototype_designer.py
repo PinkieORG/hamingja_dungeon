@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import igraph as ig
 from hamingja_dungeon.dungeon_elements.hallway import Hallway
-from hamingja_dungeon.dungeon_elements.shape import Shape
+from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.hallway_designers.hallway_designer import (
     DesignerError,
     HallwayDesigner,
@@ -76,7 +76,7 @@ class PrototypeDesigner:
         if not isinstance(room, Room):
             raise ValueError("Can connect only rooms.")
 
-        entrypoints = Shape.empty(sector.size).insert_shape(origin, room.entrypoints)
+        entrypoints = Mask.empty(sector.size).insert_shape(origin, room.entrypoints)
 
         nearby = set()
         for entrypoint in entrypoints.points():
@@ -86,7 +86,7 @@ class PrototypeDesigner:
                 child = sector.get_child(id)
                 if not isinstance(child.object, Room):
                     continue
-                child_entrypoints = Shape.empty(sector.size).insert_shape(
+                child_entrypoints = Mask.empty(sector.size).insert_shape(
                     child.origin, child.object.entrypoints
                 )
                 if not (entrypoints & child_entrypoints).is_empty():

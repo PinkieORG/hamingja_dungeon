@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.dungeon_elements.shape import Shape
+from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
 from hamingja_dungeon.dungeon_elements.area import Area
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
@@ -51,7 +51,7 @@ class Room(Area):
         self.remove_child(id)
         self.entrances.remove(id)
 
-    def get_entrances_area(self) -> Shape:
+    def get_entrances_area(self) -> Mask:
         result = Area.empty(self.size)
         for entrance_id in self.entrances:
             entrance = self.get_child(entrance_id)
@@ -84,7 +84,7 @@ class LRoom(Room):
             )
         )
 
-        filling = Shape(dim_range.sample())
+        filling = Mask(dim_range.sample())
         fit_area = self.fit_in(filling, self.corners_in_direction(direction))
         if fit_area.is_empty():
             raise EmptyFitArea("Cannot fit the filling.")
@@ -117,4 +117,4 @@ class CircleRoom(Room):
         room_anchor = deepcopy(self.mask)
         room_anchor[1:-1, 1:-1] = False
         room_anchor = prune(room_anchor)
-        self.entrypoints = Shape.from_array(room_anchor)
+        self.entrypoints = Mask.from_array(room_anchor)

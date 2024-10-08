@@ -1,7 +1,7 @@
 import numpy as np
 from tcod import tcod
 
-from hamingja_dungeon.dungeon_elements.shape import Shape
+from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.dungeon_elements.area import Area
 from hamingja_dungeon.tile_types import floor
@@ -9,11 +9,11 @@ from hamingja_dungeon.utils.ascii_dungeon_generator.dungeon_renderer.renderer im
     Renderer,
 )
 
-full_square = Shape.from_array(
+full_square = Mask.from_array(
     np.array([[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
 )
 
-square = Shape.from_array(
+square = Mask.from_array(
     np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -28,7 +28,7 @@ square = Shape.from_array(
     )
 )
 
-l_shape = Shape.from_array(
+l_shape = Mask.from_array(
     np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -44,7 +44,7 @@ l_shape = Shape.from_array(
     )
 )
 
-c_shape = Shape.from_array(
+c_shape = Mask.from_array(
     np.array(
         [
             [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -60,7 +60,7 @@ c_shape = Shape.from_array(
     )
 )
 
-hole_shape = Shape.from_array(
+hole_shape = Mask.from_array(
     np.array(
         [
             [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -76,7 +76,7 @@ hole_shape = Shape.from_array(
     )
 )
 
-big_area = Shape.from_array(
+big_area = Mask.from_array(
     np.array(
         [
             [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],

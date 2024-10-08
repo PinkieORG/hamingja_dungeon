@@ -3,8 +3,8 @@ from typing import Tuple
 import numpy as np
 import igraph as ig
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.dungeon_elements.shape import Shape
-from hamingja_dungeon.dungeon_elements.area import Area, Child
+from hamingja_dungeon.dungeon_elements.mask import Mask
+from hamingja_dungeon.dungeon_elements.area import Area, AreaWithOrigin
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.vector import Vector
 from hamingja_dungeon.dungeon_elements.room import Room
@@ -19,7 +19,7 @@ class Sector(Area):
         super().__init__(size, fill_value=fill_value)
         self.room_graph = ig.Graph()
 
-    def get_rooms(self) -> dict[int, Child]:
+    def get_rooms(self) -> dict[int, AreaWithOrigin]:
         result = {}
         for id, child in self.children.items():
             if isinstance(child.object, Room):
@@ -37,7 +37,7 @@ class Sector(Area):
         if not isinstance(neighbour.object, Room):
             raise ValueError("The neighbour of the room has to be a room.")
 
-        anchor = Shape.empty(self.size).insert_shape(
+        anchor = Mask.empty(self.size).insert_shape(
             neighbour.origin, neighbour.object.entrypoints
         )
         without_children = (~self.children_shapes()).insert_shape(

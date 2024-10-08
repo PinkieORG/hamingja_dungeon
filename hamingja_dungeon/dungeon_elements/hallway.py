@@ -3,7 +3,7 @@ import numpy as np
 from scipy.ndimage import binary_dilation
 from skimage.measure import label
 
-from hamingja_dungeon.dungeon_elements.shape import Shape
+from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
 from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
 from hamingja_dungeon.dungeon_elements.room import Room
@@ -33,10 +33,10 @@ class Hallway(Room):
         borderless[1:-1, 1:-1] = path
         with_border = binary_dilation(borderless, structure=SQUARE)
         self.mask = with_border
-        self.hallway_border = Shape.from_array(with_border ^ borderless)
+        self.hallway_border = Mask.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
         self.endpoints = get_endpoints(borderless)
-        self.entrypoints = Shape.from_array(
+        self.entrypoints = Mask.from_array(
             binary_dilation(self.endpoints, structure=PLUS) & self.border().mask
         )
 
