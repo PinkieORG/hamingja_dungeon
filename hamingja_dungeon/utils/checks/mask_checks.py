@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hamingja_dungeon.dungeon_elements.mask import Mask
@@ -15,3 +15,8 @@ def check_masks_are_same_size(first_mask: Mask, second_mask: Mask) -> None:
 def check_vector_is_positive(vector: Vector) -> None:
     if not vector.is_positive():
         raise ValueError("The origin of the mask has to be positive.")
+
+
+def check_thickness_is_positive(thickness: int) -> None:
+    if thickness < 0:
+        raise ValueError("Thickness cannot be negative.")

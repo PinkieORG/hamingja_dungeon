@@ -7,15 +7,14 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
-from hamingja_dungeon.utils.checks.array_checks import check_array_is_two_dimensional, \
-    check_array_is_same_shape
-from hamingja_dungeon.utils.checks.mask_checks import check_vector_is_positive, \
-    check_masks_are_same_size
+from hamingja_dungeon.utils.checks.array_checks import (check_array_is_two_dimensional,
+                                                        check_array_is_same_shape, )
+from hamingja_dungeon.utils.checks.mask_checks import (check_vector_is_positive,
+                                                       check_masks_are_same_size,
+                                                       check_thickness_is_positive, )
 from hamingja_dungeon.utils.direction import Direction
-from hamingja_dungeon.utils.morphology.structure_elements import (OUTSIDE_CORNERS,
-                                                                  SQUARE, HORIZONTAL,
-                                                                  VERTICAL,
-                                                                  INSIDE_CORNERS, )
+from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import (
+    OUTSIDE_CORNERS, SQUARE, INSIDE_CORNERS, BORDERS_FOR_EROSION, )
 from hamingja_dungeon.utils.vector import Vector
 
 
@@ -125,7 +124,7 @@ class Mask:
         second_origin: Vector,
         second_mask: Mask,
     ) -> Mask:
-        """Returns an intersection of two shapes as if they have been placed according
+        """Returns an intersection of two masks as if they have been placed according
         to the given origins."""
         first_embedded = Mask.empty_mask(self.size)
         first_embedded.insert_shape(first_origin, first_mask)
@@ -134,21 +133,21 @@ class Mask:
         return first_embedded & second_embedded
 
     def volume(self) -> int:
-        """Returns a number of true points."""
+        """Returns a number of true elements."""
         return np.count_nonzero(self.array)
 
-    def inside_bbox(self, p: Vector) -> bool:
-        """Checks whether a point is inside the bounding box of the shape."""
-        return 0 <= p.y < self.h and 0 <= p.x < self.w
+    def is_inside_bbox(self, point: Vector) -> bool:
+        """Checks whether a point is inside the bounding box of the mask."""
+        return 0 <= point.y < self.h and 0 <= point.x < self.w
 
-    def is_inside_mask(self, p: Vector) -> bool:
+    def is_inside_mask(self, point: Vector) -> bool:
         """Checks whether a point is inside the mask."""
-        if not self.inside_bbox(p):
+        if not self.is_inside_bbox(point):
             return False
-        return bool(self.array[p.y, p.x])
+        return bool(self.array[point.y, point.x])
 
     def is_subset_of(self, other: Mask) -> bool:
-        """Checks whether the shape is subset of another."""
+        """Checks whether the mask is subset of another."""
         if self.size != other.size:
             return False
         return np.all(other.array & self.array == self.array)
@@ -159,37 +158,41 @@ class Mask:
         return not np.any(self.array)
 
     def insert_shape(self, origin: Vector, to_insert: Mask) -> Mask:
-        """Inserts another shape inside with respect to its origin and mask."""
+        """Inserts another mask inside with respect to its origin."""
         self._set_array_values(origin, to_insert, True)
         return self
 
     def remove_shape(self, origin: Vector, to_remove: Mask) -> Mask:
-        """Removes another shape defined by its true values with respect to its
+        """Removes another mask defined by its true values with respect to its
         origin."""
         self._set_array_values(origin, to_remove, False)
         return self
 
-    def border(self, thickness: int = 1, direction: Direction = None) -> Mask:
-        """Returns a border of the given thickness in the given direction.
-        Border in all direction will be returned if direction is None."""
-        if thickness < 0:
-            raise ValueError("Thickness cannot be negative.")
-        if thickness == 0:
-            return Mask.empty_mask(self.size)
-        if direction is None:
-            return Mask.from_array(
-                self.array
-                & ~binary_erosion(self.array, structure=SQUARE, iterations=thickness)
-            )
-        structure = VERTICAL if direction.is_vertical() else HORIZONTAL
-        if direction == direction.EAST:
-            origin = (0, -1)
-        elif direction == direction.SOUTH:
-            origin = (-1, 0)
-        else:
-            origin = (0, 0)
+    def border_in_direction(self, direction: Direction, thickness: int = 1) -> Mask:
+        """Returns border in the given direction."""
+        check_thickness_is_positive(thickness)
+        structure = BORDERS_FOR_EROSION.get(direction)
         return Mask.from_array(
-            self.array & ~binary_erosion(self.array, structure, origin=origin)
+            self.array
+            & ~binary_erosion(
+                self.array,
+                structure=structure.fg,
+                origin=structure.origin,
+                iterations=thickness,
+            )
+        )
+
+    def border(self, thickness: int = 1) -> Mask:
+        """Returns a border of the given thickness"""
+        check_thickness_is_positive(thickness)
+        return Mask.from_array(
+            self.array
+            & ~binary_erosion(
+                self.array,
+                structure=SQUARE.fg,
+                origin=SQUARE.origin,
+                iterations=thickness,
+            )
         )
 
     def corners(self) -> Mask:
@@ -204,7 +207,7 @@ class Mask:
         its clockwise neighbour specifies the corner orientation."""
         corner = INSIDE_CORNERS.get(direction)
         return Mask.from_array(
-            binary_hit_or_miss(self.array, structure1=corner[0], origin1=corner[1])
+            binary_hit_or_miss(self.array, structure1=corner.fg, origin1=corner.origin)
         )
 
     def outside_corners_in_direction(self, direction: Direction) -> Mask:
@@ -212,7 +215,7 @@ class Mask:
         its clockwise neighbour specifies the corner orientation."""
         corner = OUTSIDE_CORNERS.get(direction)
         return Mask.from_array(
-            binary_hit_or_miss(self.array, structure1=corner[0], origin1=corner[1])
+            binary_hit_or_miss(self.array, structure1=corner.fg, origin1=corner.origin)
         )
 
     def outside_corners(self) -> Mask:

@@ -5,7 +5,7 @@ from skimage.measure import label
 
 from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
-from hamingja_dungeon.utils.morphology.structure_elements import PLUS, SQUARE
+from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import PLUS_SIGN, SQUARE
 from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.tile_types import wall
 from hamingja_dungeon.utils.utils import tighten
@@ -31,13 +31,15 @@ class Hallway(Room):
 
         borderless = np.zeros(new_size).astype(bool)
         borderless[1:-1, 1:-1] = path
-        with_border = binary_dilation(borderless, structure=SQUARE)
+        with_border = binary_dilation(borderless, structure=SQUARE.fg)
         self.array = with_border
         self.hallway_border = Mask.from_array(with_border ^ borderless)
         self.draw(wall, self.hallway_border)
         self.endpoints = get_endpoints(borderless)
         self.entrypoints = Mask.from_array(
-            binary_dilation(self.endpoints, structure=PLUS) & self.border().array
+            binary_dilation(self.endpoints, structure=PLUS_SIGN.fg) & self.border(
+
+            ).array
         )
 
     # TODO Make about localisation not only binary check.
@@ -47,6 +49,7 @@ class Hallway(Room):
         entrances = self.get_entrances_area()
         for component_label in range(1, count + 1):
             end = np.where(labeled == component_label, 1, 0)
-            if not np.any(binary_dilation(end, structure=PLUS) & entrances.array):
+            if not np.any(binary_dilation(end, structure=PLUS_SIGN.fg) &
+                          entrances.array):
                 return True
         return False
