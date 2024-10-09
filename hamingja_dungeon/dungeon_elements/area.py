@@ -33,10 +33,9 @@ class Area(Mask):
     """Represent an area in the dungeon with its tile representation.
     It can have sub-areas (children)."""
 
-    def __init__(self, size: Tuple[int, int], fill_value: np.ndarray = None):
+    def __init__(self, size: Tuple[int, int], fill_value: np.ndarray = default):
         super().__init__(size)
-        if fill_value is None:
-            fill_value = default
+        check_value_is_tile_type(fill_value)
         self._tiles = np.full(size, fill_value=fill_value)
         self.children: dict[int, AreaWithOrigin] = {}
         self.id_generator = itertools.count()
@@ -70,7 +69,7 @@ class Area(Mask):
         as the area."""
         result = Mask.empty_mask(self.size)
         child = self.get_child(child_id)
-        result.insert_shape(child.origin, child.area)
+        result.insert_mask(child.origin, child.area)
         return result
 
     def embedded_children_mask(self, children_ids: list[int]) -> Mask:
@@ -162,7 +161,7 @@ class Area(Mask):
 
         neighbour = self.get_child(neighbour_id)
         embedded_neighbour_border = Mask.empty_mask(self.size)
-        embedded_neighbour_border.insert_shape(
+        embedded_neighbour_border.insert_mask(
             neighbour.origin, neighbour.area.border_mask()
         )
         border_without_children = self.childless_mask() | embedded_neighbour_border
