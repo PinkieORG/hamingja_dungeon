@@ -3,23 +3,26 @@ import numpy as np
 from scipy.ndimage import binary_dilation
 from skimage.measure import label
 
+from hamingja_dungeon import tile_types
+from hamingja_dungeon.dungeon_elements.chamber import Chamber
 from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.utils.morphology.morphology import get_endpoints
-from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import PLUS_SIGN, SQUARE
-from hamingja_dungeon.dungeon_elements.room import Room
+from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import (
+    PLUS_SIGN,
+    SQUARE,
+)
 from hamingja_dungeon.tile_types import wall
 from hamingja_dungeon.utils.utils import tighten
 
 
-# TODO create a common super class for hallway and room (region, section?) since hallway is not really a room, is it?
-class Hallway(Room):
+class Hallway(Chamber):
     """Represents a hallway: a path-like room surrounded by walls."""
 
     def __init__(
         self,
         path: np.array,
-        fill_value: np.ndarray = None,
-        border_fill_value: np.ndarray = None,
+        fill_value: np.ndarray = tile_types.floor,
+        border_fill_value: np.ndarray = tile_types.wall,
     ):
         path = tighten(path)
         new_size = (path.shape[0] + 2, path.shape[1] + 2)
@@ -37,19 +40,19 @@ class Hallway(Room):
         self.draw_on_mask(wall, self.hallway_border)
         self.endpoints = get_endpoints(borderless)
         self.entrypoints = Mask.from_array(
-            binary_dilation(self.endpoints, structure=PLUS_SIGN.fg) & self.border_mask(
-
-            ).array
+            binary_dilation(self.endpoints, structure=PLUS_SIGN.fg)
+            & self.border_mask().array
         )
 
     # TODO Make about localisation not only binary check.
     # TODO: make it work for very short hallways.
     def has_dead_end(self):
         labeled, count = label(self.endpoints, background=0, return_num=True)
-        entrances = self.get_entrances_area()
+        entrances = self.get_entrances_mask()
         for component_label in range(1, count + 1):
             end = np.where(labeled == component_label, 1, 0)
-            if not np.any(binary_dilation(end, structure=PLUS_SIGN.fg) &
-                          entrances.array):
+            if not np.any(
+                binary_dilation(end, structure=PLUS_SIGN.fg) & entrances.array
+            ):
                 return True
         return False

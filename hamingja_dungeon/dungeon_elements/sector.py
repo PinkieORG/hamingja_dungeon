@@ -7,8 +7,10 @@ import numpy as np
 
 from hamingja_dungeon import tile_types
 from hamingja_dungeon.dungeon_elements.area import Area, AreaWithOrigin
+from hamingja_dungeon.dungeon_elements.chamber import Chamber
 from hamingja_dungeon.dungeon_elements.mask import Mask
-from hamingja_dungeon.dungeon_elements.room import Room
+from hamingja_dungeon.utils.checks.area_checks import check_child_of_id_exists
+from hamingja_dungeon.utils.checks.sector_checks import check_area_is_room
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.vector import Vector
 
@@ -22,41 +24,36 @@ class Sector(Area):
         super().__init__(size, fill_value=fill_value)
         self.room_graph = ig.Graph()
 
-    def get_rooms(self) -> dict[int, AreaWithOrigin]:
+    def get_chambers(self) -> dict[int, AreaWithOrigin]:
         result = {}
-        for id, child in self.children.items():
-            if isinstance(child.area, Room):
-                result[id] = child
+        for room_id, child in self.children.items():
+            if isinstance(child.area, Chamber):
+                result[room_id] = child
         return result
 
-    def fit_room_adjacent(self, to_fit: Room, neighbour_id: int) -> np.array:
+    def fit_room_adjacent(self, to_fit: Chamber, neighbour_id: int) -> Mask:
         """Fits a room next to one already in the sector. Rooms will share a
-        border and will be fitted with respect to their room_anchor."""
-        if neighbour_id not in self.children:
-            raise ValueError(
-                "The neighbour of the room to fit has to be a child of this sector."
-            )
+        border and will be fitted with respect to their entrance points."""
+        check_child_of_id_exists(neighbour_id, self.children)
         neighbour = self.get_child(neighbour_id)
-        if not isinstance(neighbour.area, Room):
-            raise ValueError("The neighbour of the room has to be a room.")
-
-        anchor = Mask.empty_mask(self.size).insert_shape(
+        check_area_is_room(neighbour.area)
+        embedded_entrypoints = Mask.empty_mask(self.size).insert_mask(
             neighbour.origin, neighbour.area.entrypoints
         )
-        without_children = (~self.embedded_all_children_mask()).insert_shape(
+        border_without_children = self.childless_mask().insert_mask(
             neighbour.origin, neighbour.area.border_mask()
         )
-        return without_children.fit_in_anchors_touching(
-            to_fit, anchor=anchor, to_fit_anchor=to_fit.entrypoints
+        return border_without_children.fit_in_anchors_touching(
+            to_fit, anchor=embedded_entrypoints, to_fit_anchor=to_fit.entrypoints
         )
 
-    def add_room(self, origin: Vector, room: Room) -> int:
+    def add_room(self, origin: Vector, room: Chamber) -> int:
         """Adds a new room at the given origin. Returns its new id."""
-        id = self.add_child(origin, room)
-        self.room_graph.add_vertex(id=id)
-        return id
+        new_id = self.add_child(origin, room)
+        self.room_graph.add_vertex(id=new_id)
+        return new_id
 
-    def remove_room(self, to_remove_id) -> None:
+    def remove_room(self, to_remove_id: int) -> None:
         to_remove_index = self.room_graph.vs.find(id=to_remove_id)
         edge_indexes = self.room_graph.incident(to_remove_index)
         for index in edge_indexes:
@@ -67,7 +64,7 @@ class Sector(Area):
         self.room_graph.delete_vertices([to_remove_index])
         self.remove_child(to_remove_id)
 
-    def add_room_adjacent(self, room: Room, neighbour_id: int) -> int:
+    def add_room_adjacent(self, room: Chamber, neighbour_id: int) -> int:
         """Adds a new room that will be adjacent to its given neighbour.
         They will share a wall. Returns its new id."""
         fit_area = self.fit_room_adjacent(room, neighbour_id=neighbour_id)
@@ -93,7 +90,7 @@ class Sector(Area):
         first_room = first.area
         second = self.get_child(second_id)
         second_room = second.area
-        if not isinstance(first_room, Room) or not isinstance(second_room, Room):
+        if not isinstance(first_room, Chamber) or not isinstance(second_room, Chamber):
             raise ValueError("Can make entrances only between rooms.")
 
         border_intersection = self.intersection(

@@ -1,9 +1,11 @@
 import random
 from copy import deepcopy
 
-import igraph as ig
+
+from hamingja_dungeon.dungeon_elements.chamber import Chamber
 from hamingja_dungeon.dungeon_elements.hallway import Hallway
 from hamingja_dungeon.dungeon_elements.mask import Mask
+from hamingja_dungeon.dungeon_elements.room_factory import RoomFactory
 from hamingja_dungeon.hallway_designers.hallway_designer import (
     DesignerError,
     HallwayDesigner,
@@ -12,7 +14,6 @@ from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
 from hamingja_dungeon.dungeon_elements.sector import Sector
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
-from hamingja_dungeon.dungeon_elements.room import CircleRoom, LRoom, Room
 from hamingja_dungeon.dungeon_designers.config.dungeon_area_config import (
     DungeonAreaConfig,
 )
@@ -34,21 +35,22 @@ class PrototypeDesigner:
             self.room_dim_sampler = DimensionSampler(config.range_room_size)
         else:
             self.room_dim_sampler = DimensionSampler.fixed(config.fixed_room_size)
+        self.room_factory = RoomFactory()
 
     def _get_room(self):
         size = self.room_dim_sampler.sample()
         num = random.random()
         if num < 0.6:
-            room = Room(size)
+            room = self.room_factory.rectangle_room(size)
         elif num < 0.8:
-            room = LRoom(size)
+            room = self.room_factory.l_room(size)
         else:
-            room = CircleRoom(min(size))
+            room = self.room_factory.circle_room(min(size))
         return room
 
     def _create_hallway(self, dungeon_area: Sector, room_id: int):
         room = dungeon_area.get_child(room_id).area
-        if not isinstance(room, Room):
+        if not isinstance(room, Chamber):
             raise ValueError("Hallway can be created only from a room.")
         room_origin = dungeon_area.get_child(room_id).origin
 
@@ -73,10 +75,10 @@ class PrototypeDesigner:
         child = sector.get_child(room_id)
         room = child.area
         origin = child.origin
-        if not isinstance(room, Room):
+        if not isinstance(room, Chamber):
             raise ValueError("Can connect only rooms.")
 
-        entrypoints = Mask.empty_mask(sector.size).insert_shape(origin, room.entrypoints)
+        entrypoints = Mask.empty_mask(sector.size).insert_mask(origin, room.entrypoints)
 
         nearby = set()
         for entrypoint in entrypoints.mask_coordinates():
@@ -84,9 +86,9 @@ class PrototypeDesigner:
             ids.remove(room_id)
             for id in ids:
                 child = sector.get_child(id)
-                if not isinstance(child.area, Room):
+                if not isinstance(child.area, Chamber):
                     continue
-                child_entrypoints = Mask.empty_mask(sector.size).insert_shape(
+                child_entrypoints = Mask.empty_mask(sector.size).insert_mask(
                     child.origin, child.area.entrypoints
                 )
                 if not (entrypoints & child_entrypoints).is_empty():
@@ -132,7 +134,7 @@ class PrototypeDesigner:
         return 1
 
     def remove_dead_ends(self, sector: Sector):
-        rooms_copy = deepcopy(sector.get_rooms())
+        rooms_copy = deepcopy(sector.get_chambers())
         for room_id, room in rooms_copy.items():
             if not isinstance(room.area, Hallway):
                 continue
