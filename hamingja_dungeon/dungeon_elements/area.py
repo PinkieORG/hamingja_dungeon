@@ -9,13 +9,24 @@ import numpy as np
 
 from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.tile_types import default, tile_dt
+from hamingja_dungeon.utils.checks.area_checks import (
+    check_child_of_id_exists,
+    check_value_is_tile_type,
+)
+from hamingja_dungeon.utils.checks.array_checks import check_array_is_same_shape
+from hamingja_dungeon.utils.checks.mask_checks import (
+    check_masks_are_same_size,
+    check_vector_is_positive,
+)
+from hamingja_dungeon.utils.checks.vector_checks import check_origin_is_positive
+from hamingja_dungeon.utils.utils import crop
 from hamingja_dungeon.utils.vector import Vector
 
 
 @dataclass
 class AreaWithOrigin:
     origin: Vector
-    object: Area
+    area: Area
 
 
 class Area(Mask):
@@ -30,132 +41,116 @@ class Area(Mask):
         self.children: dict[int, AreaWithOrigin] = {}
         self.id_generator = itertools.count()
 
+    def _crop_tiles(self, origin: Vector, size: Tuple[int, int]) -> np.ndarray:
+        """Returns a cropped tiles from the given origin given by the size."""
+        check_vector_is_positive(origin)
+        return crop(self.tiles, origin, size)
+
     @property
     def tiles(self) -> np.ndarray:
         return self._tiles
 
-    def in_childless_area(self, point: Vector) -> bool:
+    @tiles.setter
+    def tiles(self, tiles: np.ndarray) -> None:
+        check_array_is_same_shape(self.tiles, tiles)
+        check_value_is_tile_type(tiles)
+
+    def get_children_ids(self) -> list[int]:
+        return list(self.children.keys())
+
+    def in_childless_mask(self, vector: Vector) -> bool:
         """Checks whether a point is in an area not occupied by children."""
-        return self.childless_shape().is_inside_mask(point)
+        return self.childless_mask().is_inside_mask(vector)
 
     def fullness(self) -> float:
-        return self.children_shapes().volume() / self.volume()
+        return self.embedded_all_children_mask().volume() / self.volume()
 
-    def child_shape(self, id: int) -> Mask:
-        """Returns a shape of the child given by its id. The result has the same size
+    def embedded_child_mask(self, child_id: int) -> Mask:
+        """Returns a mask of the child given by its id. The result has the same size
         as the area."""
         result = Mask.empty_mask(self.size)
-        child = self.get_child(id)
-        origin = child.origin
-        object = child.object
-        afflicted_area = result.array[
-                         origin.y: origin.y + object.h, origin.x: origin.x + object.w
-                         ]
-
-        afflicted_area[object.array] = True
+        child = self.get_child(child_id)
+        result.insert_shape(child.origin, child.area)
         return result
 
-    def children_shapes(self, without: [int] = None) -> Mask:
-        """Returns a combined shapes of the children."""
-        if without is None:
-            without = []
+    def embedded_children_mask(self, children_ids: list[int]) -> Mask:
+        """Returns a combined masks of the children given by their ids. The result has
+        the same size as the area."""
         result = Mask.empty_mask(self.size)
-        children = {
-            key: value for key, value in self.children.items() if key not in without
-        }
-        for child in children.values():
-            origin = child.origin
-            object = child.object
-            afflicted_area = result.array[
-                origin.y : origin.y + object.h, origin.x : origin.x + object.w
-            ]
-
-            afflicted_area[object.array] = True
+        for child_id in children_ids:
+            result |= self.embedded_child_mask(child_id)
         return result
 
-    def childless_shape(self) -> Mask:
-        """Returns a shape with the children removed."""
+    def embedded_all_children_mask(self) -> Mask:
+        """Returns a combined masks of all the children. The result has the same size
+        as the area."""
+        return self.embedded_children_mask(self.get_children_ids())
+
+    def childless_mask(self) -> Mask:
+        """Returns a mask with the children removed."""
         result = Mask.from_array(self.array)
-        return result & ~self.children_shapes()
+        return result & ~self.embedded_all_children_mask()
 
-    def inner_shape(self) -> Mask:
-        """Returns a shape without the border."""
-        return Mask.from_array(self.array) - self.border()
+    def fill(self, value: np.ndarray) -> None:
+        """Will fill the area with the given value."""
+        self.tiles = np.full(self.size, value)
 
-    def draw(self, value: np.ndarray, mask: Mask = None) -> None:
-        """Will draw on the area with the given value with respect to the
-        given mask. If no mask is given will draw everywhere."""
-        if mask is None:
-            mask = Mask(self.size)
-        if value.dtype != tile_dt:
-            raise ValueError("Fill value has to have the tile dtype.")
-        if mask.size != self.size:
-            raise ValueError("The mask has to have the the size of the area.")
+    def draw_on_mask(self, value: np.ndarray, mask: Mask) -> None:
+        """Will fill the area with the given value with respect to the
+        given mask."""
+        check_masks_are_same_size(self, mask)
+        check_value_is_tile_type(value)
         self.tiles[mask.array] = value
 
     def draw_border(self, value: np.ndarray, thickness: int = 1) -> None:
         """Will draw the border of the given thickness with the given value."""
-        if value.dtype != tile_dt:
-            raise ValueError("fill_value needs to have the tile dtype.")
-        self.draw(value, mask=self.border(thickness))
+        self.draw_on_mask(value, mask=self.border_mask(thickness))
 
-    def draw_inside(self, value: np.ndarray) -> None:
+    def draw_borderless(self, value: np.ndarray) -> None:
         """Will draw the inside with the given value."""
-        if value.dtype != tile_dt:
-            raise ValueError("fill_value needs to have the tile dtype.")
-        self.draw(value, mask=self.inner_shape())
+        self.draw_on_mask(value, mask=self.borderless_mask())
 
-    def draw_area(self, p: Vector, area: Area) -> None:
-        """Will draw another area with respect to its mask. If it
-        protrudes outside of this area it will be cropped."""
-        if not p.is_positive():
-            raise ValueError("The area cannot be drawn from negative point.")
-        afflicted_tiles = self.tiles[p.y : p.y + area.h, p.x : p.x + area.w]
-        if 0 in afflicted_tiles.shape:
-            return
-        cropped_mask = area.array[
-            0 : afflicted_tiles.shape[0], 0 : afflicted_tiles.shape[1]
-        ]
-        cropped_tiles = area.tiles[
-            0 : afflicted_tiles.shape[0], 0 : afflicted_tiles.shape[1]
-        ]
+    def draw_area(self, origin: Vector, area: Area) -> None:
+        """Will draw another area with respect to its mask and origin. If it protrudes
+        outside of this area it will be cropped."""
+        afflicted_tiles = self._crop_tiles(origin, area.size)
+        new_size = (afflicted_tiles.shape[0], afflicted_tiles.shape[1])
+        cropped_mask = area._crop_array(Vector(0, 0), new_size)
+        cropped_tiles = area._crop_tiles(Vector(0, 0), new_size)
         afflicted_tiles[cropped_mask] = cropped_tiles[cropped_mask]
 
     def add_child(self, origin: Vector, area: Area) -> int:
         """Adds child to the area. Returns its new id."""
-        if not origin.is_positive():
-            raise ValueError("The origin of the new child has to be positive.")
-        id = next(self.id_generator)
-        self.children[id] = AreaWithOrigin(origin, area)
-        return id
+        check_origin_is_positive(origin)
+        new_id = next(self.id_generator)
+        self.children[new_id] = AreaWithOrigin(origin, area)
+        return new_id
 
-    def remove_child(self, id: int) -> None:
+    def remove_child(self, child_id: int) -> None:
         """Removes a child by its id."""
-        if id not in self.children:
-            raise ValueError("A child of this id does not exist.")
-        self.children.pop(id)
+        check_child_of_id_exists(child_id, self.children)
+        self.children.pop(child_id)
 
-    def get_child(self, id: int) -> AreaWithOrigin:
+    def get_child(self, child_id: int) -> AreaWithOrigin:
         """Returns the child of the given id."""
-        if id not in self.children:
-            raise ValueError("The child of this id does not exists.")
-        return self.children.get(id)
+        check_child_of_id_exists(child_id, self.children)
+        return self.children.get(child_id)
 
     # TODO binary search?
     def get_children_at(self, point: Vector) -> list[int]:
         """Returns ids of all children at the given point."""
         result = []
-        for id, child in self.children.items():
-            child_shape = self.child_shape(id)
-            if child_shape.is_inside_mask(point):
-                result.append(id)
+        for child_id, child in self.children.items():
+            embedded_child_mask = self.embedded_child_mask(child_id)
+            if embedded_child_mask.is_inside_mask(point):
+                result.append(child_id)
         return result
 
     def draw_children(self) -> Area:
         """Draws all of its children."""
         result = deepcopy(self)
         for child in self.children.values():
-            with_children = child.object.draw_children()
+            with_children = child.area.draw_children()
             result.draw_area(child.origin, with_children)
         return result
 
@@ -165,18 +160,12 @@ class Area(Mask):
 
         # TODO Support borders of thickness larger than 1.
 
-        if neighbour_id not in self.children:
-            raise ValueError(
-                "The neighbour of the area to fit has to be a child of this area."
-            )
         neighbour = self.get_child(neighbour_id)
-
-        anchor = Mask.empty_mask(self.size).insert_shape(
-            neighbour.origin, neighbour.object.border()
+        embedded_neighbour_border = Mask.empty_mask(self.size)
+        embedded_neighbour_border.insert_shape(
+            neighbour.origin, neighbour.area.border_mask()
         )
-        without_children = self.childless_shape().insert_shape(
-            neighbour.origin, neighbour.object.border()
-        )
-        return without_children.fit_in_anchors_touching(
-            to_fit, anchor=anchor, to_fit_anchor=to_fit.border()
+        border_without_children = self.childless_mask() | embedded_neighbour_border
+        return border_without_children.fit_in_anchors_touching(
+            to_fit, anchor=embedded_neighbour_border, to_fit_anchor=to_fit.border_mask()
         )

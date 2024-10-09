@@ -17,12 +17,12 @@ class TestMask(TestCase):
 
     def test_border(self):
         print("border test:")
-        print_test_areas(Mask.border)
+        print_test_areas(Mask.border_mask)
 
     def test_border_in_direction(self):
         print("border in direction test:")
         for dir in Direction.get_all_directions():
-            print_test_areas(Mask.border, dir)
+            print_test_areas(Mask.border_mask, dir)
 
     def test_corners_in_direction(self):
         print("corners in direction test:")
@@ -49,9 +49,9 @@ class TestMask(TestCase):
             print("original: ")
             print(area)
             print("border (anchor): ")
-            print(area.border())
+            print(area.border_mask())
             print("result: ")
-            print(area.fit_in(to_fit, area.border()))
+            print(area.fit_in(to_fit, area.border_mask()))
 
     def test_fit_in_two_anchor(self):
         to_fit = Mask.from_array(np.array([[1, 0], [1, 0], [1, 1]]))
@@ -62,6 +62,6 @@ class TestMask(TestCase):
             print("original: ")
             print(area)
             print("border (anchor): ")
-            print(area.border())
+            print(area.border_mask())
             print("result: ")
-            print(area.fit_in(to_fit, area.border(), to_fit_anchor))
+            print(area.fit_in(to_fit, area.border_mask(), to_fit_anchor))

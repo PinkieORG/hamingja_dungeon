@@ -1,7 +1,14 @@
+from typing import Tuple
+
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
 from hamingja_dungeon.utils.morphology.morphology import prune
+from hamingja_dungeon.utils.vector import Vector
+
+
+def crop(to_crop: np.ndarray, origin: Vector, size: Tuple[int, int]) -> np.ndarray:
+    return to_crop[origin.y : origin.y + size[0], origin.x : origin.x + size[1]]
 
 
 def tighten(array: np.array) -> np.array:
@@ -15,7 +22,7 @@ def tighten(array: np.array) -> np.array:
     ]
 
 
-def circle_mask(dim: int) -> np.array:
+def circle(dim: int) -> np.array:
     """Returns a circle binary mask without the apexes on each side that do not
     border with the inside of the circle."""
     circle_dim = dim + 2

@@ -11,7 +11,7 @@ from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.morphology.morphology import prune
-from hamingja_dungeon.utils.utils import circle_mask
+from hamingja_dungeon.utils.utils import circle
 from hamingja_dungeon.utils.vector import Vector
 
 ROOM_MIN_SIZE = (3, 3)
@@ -55,7 +55,7 @@ class Room(Area):
         result = Area.empty_mask(self.size)
         for entrance_id in self.entrances:
             entrance = self.get_child(entrance_id)
-            result.insert_shape(entrance.origin, entrance.object)
+            result.insert_shape(entrance.origin, entrance.area)
         return result
 
 class LRoom(Room):
@@ -111,7 +111,7 @@ class CircleRoom(Room):
             fill_value=fill_value,
             border_fill_value=border_fill_value,
         )
-        self.mask = circle_mask(dim)
+        self.mask = circle(dim)
         self.draw_border(border_fill_value)
 
         room_anchor = deepcopy(self.mask)

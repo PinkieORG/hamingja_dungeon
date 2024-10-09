@@ -92,7 +92,7 @@ class HallwayDesigner:
             if not self.dungeon_area.is_inside_mask(neighbour):
                 return False
         # TODO childless area without child borders in the future.
-        if not self.dungeon_area.in_childless_area(head):
+        if not self.dungeon_area.in_childless_mask(head):
             return False
         if head in self.points:
             return False

@@ -34,10 +34,10 @@ class Hallway(Room):
         with_border = binary_dilation(borderless, structure=SQUARE.fg)
         self.array = with_border
         self.hallway_border = Mask.from_array(with_border ^ borderless)
-        self.draw(wall, self.hallway_border)
+        self.draw_on_mask(wall, self.hallway_border)
         self.endpoints = get_endpoints(borderless)
         self.entrypoints = Mask.from_array(
-            binary_dilation(self.endpoints, structure=PLUS_SIGN.fg) & self.border(
+            binary_dilation(self.endpoints, structure=PLUS_SIGN.fg) & self.border_mask(
 
             ).array
         )

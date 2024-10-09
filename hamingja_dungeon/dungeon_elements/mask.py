@@ -6,18 +6,29 @@ from typing import Tuple
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_hit_or_miss, binary_dilation
 
-from hamingja_dungeon.utils.checks.array_checks import (check_array_is_two_dimensional,
-                                                        check_array_is_same_shape, )
-from hamingja_dungeon.utils.checks.mask_checks import (check_vector_is_positive,
-                                                       check_masks_are_same_size,
-                                                       check_thickness_is_positive,
-                                                       check_anchor_is_subset,
-                                                       check_mask_is_not_empty, )
+from hamingja_dungeon.utils.checks.array_checks import (
+    check_array_is_two_dimensional,
+    check_array_is_same_shape,
+)
+from hamingja_dungeon.utils.checks.mask_checks import (
+    check_vector_is_positive,
+    check_masks_are_same_size,
+    check_thickness_is_positive,
+    check_anchor_is_subset,
+    check_mask_is_not_empty,
+)
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import (
-    OUTSIDE_CORNERS, SQUARE, INSIDE_CORNERS, BORDERS_FOR_EROSION, )
+    OUTSIDE_CORNERS,
+    SQUARE,
+    INSIDE_CORNERS,
+    BORDERS_FOR_EROSION,
+)
 from hamingja_dungeon.utils.morphology.structure_elements.utils import (
-    center_to_top_left, center_to_bottom_right, )
+    center_to_top_left,
+    center_to_bottom_right,
+)
+from hamingja_dungeon.utils.utils import crop
 from hamingja_dungeon.utils.vector import Vector
 
 
@@ -29,10 +40,10 @@ class Mask:
             raise ValueError("The size has to be positive.")
         self._array = np.full(size, fill_value=True, dtype=np.bool)
 
-    def _crop_array(self, origin: Vector, size: Tuple[int, int]) -> np.array:
+    def _crop_array(self, origin: Vector, size: Tuple[int, int]) -> np.ndarray:
         """Returns a cropped array from the given origin given by the size."""
         check_vector_is_positive(origin)
-        return self.array[origin.y : origin.y + size[0], origin.x : origin.x + size[1]]
+        return crop(self.array, origin, size)
 
     def _set_array_values(self, origin: Vector, mask: Mask, set_to: bool) -> None:
         """Sets values defined by the true values of the new mask inserted to
@@ -184,7 +195,7 @@ class Mask:
             )
         )
 
-    def border(self, thickness: int = 1) -> Mask:
+    def border_mask(self, thickness: int = 1) -> Mask:
         """Returns a border of the given thickness"""
         check_thickness_is_positive(thickness)
         return Mask.from_array(
@@ -196,6 +207,10 @@ class Mask:
                 iterations=thickness,
             )
         )
+
+    def borderless_mask(self) -> Mask:
+        """Returns a shape without the border."""
+        return Mask.from_array(self.array) - self.border_mask()
 
     def corners(self) -> Mask:
         """Returns all the corners."""
@@ -229,7 +244,7 @@ class Mask:
 
     def border_without_corners(self) -> Mask:
         """Returns a border without the shape's outside corners."""
-        return self.border() - self.corners() - self.outside_corners()
+        return self.border_mask() - self.corners() - self.outside_corners()
 
     def mask_coordinates(self) -> list[Vector]:
         """Returns a list of all coordinates that of the mask."""

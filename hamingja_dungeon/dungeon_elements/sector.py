@@ -25,7 +25,7 @@ class Sector(Area):
     def get_rooms(self) -> dict[int, AreaWithOrigin]:
         result = {}
         for id, child in self.children.items():
-            if isinstance(child.object, Room):
+            if isinstance(child.area, Room):
                 result[id] = child
         return result
 
@@ -37,14 +37,14 @@ class Sector(Area):
                 "The neighbour of the room to fit has to be a child of this sector."
             )
         neighbour = self.get_child(neighbour_id)
-        if not isinstance(neighbour.object, Room):
+        if not isinstance(neighbour.area, Room):
             raise ValueError("The neighbour of the room has to be a room.")
 
         anchor = Mask.empty_mask(self.size).insert_shape(
-            neighbour.origin, neighbour.object.entrypoints
+            neighbour.origin, neighbour.area.entrypoints
         )
-        without_children = (~self.children_shapes()).insert_shape(
-            neighbour.origin, neighbour.object.border()
+        without_children = (~self.embedded_all_children_mask()).insert_shape(
+            neighbour.origin, neighbour.area.border_mask()
         )
         return without_children.fit_in_anchors_touching(
             to_fit, anchor=anchor, to_fit_anchor=to_fit.entrypoints
@@ -63,7 +63,7 @@ class Sector(Area):
             edge = self.room_graph.es[index]
             entrance_ids = edge["ids"]
             for room_id, entrance_id in entrance_ids.items():
-                self.get_child(room_id).object.remove_entrance(entrance_id)
+                self.get_child(room_id).area.remove_entrance(entrance_id)
         self.room_graph.delete_vertices([to_remove_index])
         self.remove_child(to_remove_id)
 
@@ -90,9 +90,9 @@ class Sector(Area):
         if first_id not in self.children or second_id not in self.children:
             raise ValueError("Rooms not in children.")
         first = self.get_child(first_id)
-        first_room = first.object
+        first_room = first.area
         second = self.get_child(second_id)
-        second_room = second.object
+        second_room = second.area
         if not isinstance(first_room, Room) or not isinstance(second_room, Room):
             raise ValueError("Can make entrances only between rooms.")
 

@@ -34,7 +34,7 @@ class PrintTests(unittest.TestCase):
             print_sector(dungeon_object)
             print("result: ")
             dungeon_object.border_thickness = 1
-            dungeon_object.draw_inside(carpet)
+            dungeon_object.draw_borderless(carpet)
             print_sector(dungeon_object)
 
     def test_draw_children(self):
