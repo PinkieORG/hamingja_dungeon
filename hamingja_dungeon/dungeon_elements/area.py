@@ -8,7 +8,7 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon.dungeon_elements.mask import Mask
-from hamingja_dungeon.tile_types import default, tile_dt
+from hamingja_dungeon.tile_types import default
 from hamingja_dungeon.utils.checks.area_checks import (
     check_child_of_id_exists,
     check_value_is_tile_type,

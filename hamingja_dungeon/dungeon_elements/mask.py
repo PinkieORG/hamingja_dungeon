@@ -49,7 +49,8 @@ class Mask:
         """Sets values defined by the true values of the new mask inserted to
         the given origin."""
         afflicted_area = self._crop_array(origin, mask.size)
-        cropped_mask = mask._crop_array(Vector(0, 0), afflicted_area.shape)
+        afflicted_size = (afflicted_area.shape[0], afflicted_area.shape[1])
+        cropped_mask = mask._crop_array(Vector(0, 0), afflicted_size)
         afflicted_area[cropped_mask] = set_to
 
     @staticmethod
@@ -141,9 +142,9 @@ class Mask:
         """Returns an intersection of two masks as if they have been placed according
         to the given origins."""
         first_embedded = Mask.empty_mask(self.size)
-        first_embedded.insert_shape(first_origin, first_mask)
+        first_embedded.insert_mask(first_origin, first_mask)
         second_embedded = Mask.empty_mask(self.size)
-        second_embedded.insert_shape(second_origin, second_mask)
+        second_embedded.insert_mask(second_origin, second_mask)
         return first_embedded & second_embedded
 
     def volume(self) -> int:
@@ -170,12 +171,12 @@ class Mask:
         """Return true if there are no true elements"""
         return not np.any(self.array)
 
-    def insert_shape(self, origin: Vector, to_insert: Mask) -> Mask:
+    def insert_mask(self, origin: Vector, to_insert: Mask) -> Mask:
         """Inserts another mask inside with respect to its origin."""
         self._set_array_values(origin, to_insert, True)
         return self
 
-    def remove_shape(self, origin: Vector, to_remove: Mask) -> Mask:
+    def remove_mask(self, origin: Vector, to_remove: Mask) -> Mask:
         """Removes another mask defined by its true values with respect to its
         origin."""
         self._set_array_values(origin, to_remove, False)
@@ -270,7 +271,7 @@ class Mask:
             )
         )
 
-    def fit_in_touching_anchor(self, to_fit: Mask, anchor: Mask):
+    def fit_in_touching_anchor(self, to_fit: Mask, anchor: Mask) -> Mask:
         """Same as fit_in but the mask needs to additionally touch the coordinates
         given by an anchor."""
         check_masks_are_same_size(self, anchor)
@@ -282,7 +283,9 @@ class Mask:
         )
         return self.fit_in(to_fit) & Mask.from_array(touches_anchor)
 
-    def fit_in_anchors_touching(self, to_fit: Mask, anchor: Mask, to_fit_anchor: Mask):
+    def fit_in_anchors_touching(
+        self, to_fit: Mask, anchor: Mask, to_fit_anchor: Mask
+    ) -> Mask:
         """Same as fit_in_touching_anchor but the given the mask to fit comes with
         its own anchor that needs to touch this mask's anchor."""
         check_masks_are_same_size(self, anchor)
