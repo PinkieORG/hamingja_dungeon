@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Tuple
 
 
@@ -39,6 +40,9 @@ class Vector:
 
     def __str__(self):
         return f"({self.y}, {self.x})"
+
+    def __iter__(self):
+        return iter((self.y, self.x))
 
     def is_positive(self) -> bool:
         return self.x >= 0 and self.y >= 0

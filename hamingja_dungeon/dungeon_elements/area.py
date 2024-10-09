@@ -7,18 +7,18 @@ from typing import Tuple
 
 import numpy as np
 
-from hamingja_dungeon.dungeon_elements.shape import Shape
-from hamingja_dungeon.utils.vector import Vector
+from hamingja_dungeon.dungeon_elements.mask import Mask
 from hamingja_dungeon.tile_types import default, tile_dt
+from hamingja_dungeon.utils.vector import Vector
 
 
 @dataclass
-class Child:
+class AreaWithOrigin:
     origin: Vector
     object: Area
 
 
-class Area(Shape):
+class Area(Mask):
     """Represent an area in the dungeon with its tile representation.
     It can have sub-areas (children)."""
 
@@ -27,71 +27,71 @@ class Area(Shape):
         if fill_value is None:
             fill_value = default
         self._tiles = np.full(size, fill_value=fill_value)
-        self.children: dict[int, Child] = {}
+        self.children: dict[int, AreaWithOrigin] = {}
         self.id_generator = itertools.count()
 
     @property
     def tiles(self) -> np.ndarray:
         return self._tiles
 
-    def in_childless_area(self, p: Vector) -> bool:
+    def in_childless_area(self, point: Vector) -> bool:
         """Checks whether a point is in an area not occupied by children."""
-        return self.childless_shape().is_inside_mask(p)
+        return self.childless_shape().is_inside_mask(point)
 
     def fullness(self) -> float:
         return self.children_shapes().volume() / self.volume()
 
-    def child_shape(self, id: int) -> Shape:
+    def child_shape(self, id: int) -> Mask:
         """Returns a shape of the child given by its id. The result has the same size
         as the area."""
-        result = Shape.empty(self.size)
+        result = Mask.empty_mask(self.size)
         child = self.get_child(id)
         origin = child.origin
         object = child.object
-        afflicted_area = result.mask[
+        afflicted_area = result.array[
                          origin.y: origin.y + object.h, origin.x: origin.x + object.w
                          ]
 
-        afflicted_area[object.mask] = True
+        afflicted_area[object.array] = True
         return result
 
-    def children_shapes(self, without: [int] = None) -> Shape:
+    def children_shapes(self, without: [int] = None) -> Mask:
         """Returns a combined shapes of the children."""
         if without is None:
             without = []
-        result = Shape.empty(self.size)
+        result = Mask.empty_mask(self.size)
         children = {
             key: value for key, value in self.children.items() if key not in without
         }
         for child in children.values():
             origin = child.origin
             object = child.object
-            afflicted_area = result.mask[
+            afflicted_area = result.array[
                 origin.y : origin.y + object.h, origin.x : origin.x + object.w
             ]
 
-            afflicted_area[object.mask] = True
+            afflicted_area[object.array] = True
         return result
 
-    def childless_shape(self) -> Shape:
+    def childless_shape(self) -> Mask:
         """Returns a shape with the children removed."""
-        result = Shape.from_array(self.mask)
+        result = Mask.from_array(self.array)
         return result & ~self.children_shapes()
 
-    def inner_shape(self) -> Shape:
+    def inner_shape(self) -> Mask:
         """Returns a shape without the border."""
-        return Shape.from_array(self.mask) - self.border()
+        return Mask.from_array(self.array) - self.border()
 
-    def draw(self, value: np.ndarray, mask: Shape = None) -> None:
+    def draw(self, value: np.ndarray, mask: Mask = None) -> None:
         """Will draw on the area with the given value with respect to the
         given mask. If no mask is given will draw everywhere."""
         if mask is None:
-            mask = Shape(self.size)
+            mask = Mask(self.size)
         if value.dtype != tile_dt:
             raise ValueError("Fill value has to have the tile dtype.")
         if mask.size != self.size:
             raise ValueError("The mask has to have the the size of the area.")
-        self.tiles[mask.mask] = value
+        self.tiles[mask.array] = value
 
     def draw_border(self, value: np.ndarray, thickness: int = 1) -> None:
         """Will draw the border of the given thickness with the given value."""
@@ -113,7 +113,7 @@ class Area(Shape):
         afflicted_tiles = self.tiles[p.y : p.y + area.h, p.x : p.x + area.w]
         if 0 in afflicted_tiles.shape:
             return
-        cropped_mask = area.mask[
+        cropped_mask = area.array[
             0 : afflicted_tiles.shape[0], 0 : afflicted_tiles.shape[1]
         ]
         cropped_tiles = area.tiles[
@@ -126,7 +126,7 @@ class Area(Shape):
         if not origin.is_positive():
             raise ValueError("The origin of the new child has to be positive.")
         id = next(self.id_generator)
-        self.children[id] = Child(origin, area)
+        self.children[id] = AreaWithOrigin(origin, area)
         return id
 
     def remove_child(self, id: int) -> None:
@@ -135,7 +135,7 @@ class Area(Shape):
             raise ValueError("A child of this id does not exist.")
         self.children.pop(id)
 
-    def get_child(self, id: int) -> Child:
+    def get_child(self, id: int) -> AreaWithOrigin:
         """Returns the child of the given id."""
         if id not in self.children:
             raise ValueError("The child of this id does not exists.")
@@ -159,7 +159,7 @@ class Area(Shape):
             result.draw_area(child.origin, with_children)
         return result
 
-    def fit_adjacent_at_border(self, to_fit: Area, neighbour_id: int) -> Shape:
+    def fit_adjacent_at_border(self, to_fit: Area, neighbour_id: int) -> Mask:
         """Fits the new area next to already added child given by its id.
         The new area will share a border with the neighbour."""
 
@@ -171,12 +171,12 @@ class Area(Shape):
             )
         neighbour = self.get_child(neighbour_id)
 
-        anchor = Shape.empty(self.size).insert_shape(
+        anchor = Mask.empty_mask(self.size).insert_shape(
             neighbour.origin, neighbour.object.border()
         )
         without_children = self.childless_shape().insert_shape(
             neighbour.origin, neighbour.object.border()
         )
-        return without_children.fit_in(
+        return without_children.fit_in_anchors_touching(
             to_fit, anchor=anchor, to_fit_anchor=to_fit.border()
         )

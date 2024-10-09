@@ -16,7 +16,7 @@ class Renderer:
 
     def render_console(self, console: Console):
         self.update()
-        array = self.dungeon_object.mask
+        array = self.dungeon_object.array
         tiles = self.dungeon_object.tiles
         console.rgb[0 : console.height, 0 : console.width] = np.where(
             array, tiles["dark"], bg["dark"]

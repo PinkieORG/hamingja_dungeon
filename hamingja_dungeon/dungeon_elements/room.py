@@ -4,13 +4,13 @@ from typing import Tuple
 import numpy as np
 
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.dungeon_elements.shape import Shape
-from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
 from hamingja_dungeon.dungeon_elements.area import Area
+from hamingja_dungeon.dungeon_elements.mask import Mask
+from hamingja_dungeon.tile_types import tile_dt
+from hamingja_dungeon.utils.dimension_sampler import DimensionSampler
+from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.morphology.morphology import prune
-from hamingja_dungeon.utils.direction import Direction
-from hamingja_dungeon.tile_types import tile_dt
 from hamingja_dungeon.utils.utils import circle_mask
 from hamingja_dungeon.utils.vector import Vector
 
@@ -37,7 +37,7 @@ class Room(Area):
             fill_value=fill_value,
         )
         self.draw_border(border_fill_value)
-        self.entrypoints = self.connected_border()
+        self.entrypoints = self.border_without_corners()
         self.entrances: list[int] = []
 
     def place_entrance(self, origin: Vector, entrance: Area) -> int:
@@ -51,8 +51,8 @@ class Room(Area):
         self.remove_child(id)
         self.entrances.remove(id)
 
-    def get_entrances_area(self) -> Shape:
-        result = Area.empty(self.size)
+    def get_entrances_area(self) -> Mask:
+        result = Area.empty_mask(self.size)
         for entrance_id in self.entrances:
             entrance = self.get_child(entrance_id)
             result.insert_shape(entrance.origin, entrance.object)
@@ -84,14 +84,14 @@ class LRoom(Room):
             )
         )
 
-        filling = Shape(dim_range.sample())
-        fit_area = self.fit_in(filling, self.corners_in_direction(direction))
+        filling = Mask(dim_range.sample())
+        fit_area = self.fit_in_touching_anchor(filling, self.corners_in_direction(direction))
         if fit_area.is_empty():
             raise EmptyFitArea("Cannot fit the filling.")
-        origin = fit_area.sample()
+        origin = fit_area.sample_mask_coordinate()
         self.remove_shape(origin, filling)
         self.draw_border(border_fill_value)
-        self.entrypoints = self.connected_border()
+        self.entrypoints = self.border_without_corners()
 
 
 class CircleRoom(Room):
@@ -117,4 +117,4 @@ class CircleRoom(Room):
         room_anchor = deepcopy(self.mask)
         room_anchor[1:-1, 1:-1] = False
         room_anchor = prune(room_anchor)
-        self.entrypoints = Shape.from_array(room_anchor)
+        self.entrypoints = Mask.from_array(room_anchor)

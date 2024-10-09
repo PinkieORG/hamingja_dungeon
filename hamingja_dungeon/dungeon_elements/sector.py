@@ -1,13 +1,16 @@
 from __future__ import annotations
+
 from typing import Tuple
-import numpy as np
+
 import igraph as ig
+import numpy as np
+
 from hamingja_dungeon import tile_types
-from hamingja_dungeon.dungeon_elements.shape import Shape
-from hamingja_dungeon.dungeon_elements.area import Area, Child
+from hamingja_dungeon.dungeon_elements.area import Area, AreaWithOrigin
+from hamingja_dungeon.dungeon_elements.mask import Mask
+from hamingja_dungeon.dungeon_elements.room import Room
 from hamingja_dungeon.utils.exceptions import EmptyFitArea
 from hamingja_dungeon.utils.vector import Vector
-from hamingja_dungeon.dungeon_elements.room import Room
 
 
 class Sector(Area):
@@ -19,7 +22,7 @@ class Sector(Area):
         super().__init__(size, fill_value=fill_value)
         self.room_graph = ig.Graph()
 
-    def get_rooms(self) -> dict[int, Child]:
+    def get_rooms(self) -> dict[int, AreaWithOrigin]:
         result = {}
         for id, child in self.children.items():
             if isinstance(child.object, Room):
@@ -37,13 +40,13 @@ class Sector(Area):
         if not isinstance(neighbour.object, Room):
             raise ValueError("The neighbour of the room has to be a room.")
 
-        anchor = Shape.empty(self.size).insert_shape(
+        anchor = Mask.empty_mask(self.size).insert_shape(
             neighbour.origin, neighbour.object.entrypoints
         )
         without_children = (~self.children_shapes()).insert_shape(
             neighbour.origin, neighbour.object.border()
         )
-        return without_children.fit_in(
+        return without_children.fit_in_anchors_touching(
             to_fit, anchor=anchor, to_fit_anchor=to_fit.entrypoints
         )
 
@@ -70,7 +73,7 @@ class Sector(Area):
         fit_area = self.fit_room_adjacent(room, neighbour_id=neighbour_id)
         if fit_area.is_empty():
             raise EmptyFitArea("The new room cannot be fitted.")
-        origin = fit_area.sample()
+        origin = fit_area.sample_mask_coordinate()
         id = self.add_room(origin, room)
         return id
 
@@ -104,7 +107,7 @@ class Sector(Area):
                 "Cannot make entrance between two rooms that do not share a border."
             )
         # TODO support entrances of larger size.
-        entrance_point = border_intersection.sample()
+        entrance_point = border_intersection.sample_mask_coordinate()
         entrance = Area((1, 1), fill_value=fill_value)
         first_entrance_id = first_room.place_entrance(
             entrance_point - first.origin, entrance
