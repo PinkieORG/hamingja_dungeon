@@ -6,7 +6,7 @@ from test_utils import c_shape
 
 class PrintTests(unittest.TestCase):
     def test_prune(self):
-        border = c_shape.connected_border()
+        border = c_shape.border_without_corners()
         print("original: ")
         border.print()
         print("result: ")

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
@@ -11,10 +10,14 @@ from hamingja_dungeon.utils.checks.array_checks import (check_array_is_two_dimen
                                                         check_array_is_same_shape, )
 from hamingja_dungeon.utils.checks.mask_checks import (check_vector_is_positive,
                                                        check_masks_are_same_size,
-                                                       check_thickness_is_positive, )
+                                                       check_thickness_is_positive,
+                                                       check_anchor_is_subset,
+                                                       check_mask_is_not_empty, )
 from hamingja_dungeon.utils.direction import Direction
 from hamingja_dungeon.utils.morphology.structure_elements.structure_elements import (
     OUTSIDE_CORNERS, SQUARE, INSIDE_CORNERS, BORDERS_FOR_EROSION, )
+from hamingja_dungeon.utils.morphology.structure_elements.utils import (
+    center_to_top_left, center_to_bottom_right, )
 from hamingja_dungeon.utils.vector import Vector
 
 
@@ -39,11 +42,11 @@ class Mask:
         afflicted_area[cropped_mask] = set_to
 
     @staticmethod
-    def from_array(in_array: np.ndarray) -> Mask:
+    def from_array(array: np.ndarray) -> Mask:
         """Creates a new mask from a numpy array."""
-        check_array_is_two_dimensional(in_array)
-        result = Mask((in_array.shape[0], in_array.shape[1]))
-        result.array = np.array(in_array, dtype=bool)
+        check_array_is_two_dimensional(array)
+        result = Mask((array.shape[0], array.shape[1]))
+        result.array = np.array(array, dtype=bool)
         return result
 
     @staticmethod
@@ -136,15 +139,15 @@ class Mask:
         """Returns a number of true elements."""
         return np.count_nonzero(self.array)
 
-    def is_inside_bbox(self, point: Vector) -> bool:
-        """Checks whether a point is inside the bounding box of the mask."""
-        return 0 <= point.y < self.h and 0 <= point.x < self.w
+    def is_inside_bbox(self, vector: Vector) -> bool:
+        """Checks whether a coordinate is inside the bounding box of the mask."""
+        return 0 <= vector.y < self.h and 0 <= vector.x < self.w
 
-    def is_inside_mask(self, point: Vector) -> bool:
-        """Checks whether a point is inside the mask."""
-        if not self.is_inside_bbox(point):
+    def is_inside_mask(self, vector: Vector) -> bool:
+        """Checks whether a coordinate is inside the mask."""
+        if not self.is_inside_bbox(vector):
             return False
-        return bool(self.array[point.y, point.x])
+        return bool(self.array[vector.y, vector.x])
 
     def is_subset_of(self, other: Mask) -> bool:
         """Checks whether the mask is subset of another."""
@@ -152,7 +155,6 @@ class Mask:
             return False
         return np.all(other.array & self.array == self.array)
 
-    # TODO rename this
     def is_empty(self) -> bool:
         """Return true if there are no true elements"""
         return not np.any(self.array)
@@ -225,59 +227,56 @@ class Mask:
             result |= self.outside_corners_in_direction(dir)
         return result
 
-    def connected_border(self) -> Mask:
+    def border_without_corners(self) -> Mask:
         """Returns a border without the shape's outside corners."""
         return self.border() - self.corners() - self.outside_corners()
 
-    def points(self) -> list[Vector]:
-        """Returns a list of all true valued points."""
+    def mask_coordinates(self) -> list[Vector]:
+        """Returns a list of all coordinates that of the mask."""
         result = []
         for y, x in np.argwhere(self.array):
             result.append(Vector(y, x))
         return result
 
-    def sample(self) -> Vector:
-        """Samples and returns a position of a true value within the shape."""
-        if self.is_empty():
-            raise ValueError("Cannot sample from an empty shape.")
+    def sample_mask_coordinate(self) -> Vector:
+        """Samples and returns a coordinate of a true value within the mask."""
+        check_mask_is_not_empty(self)
         sample = random.choice(np.argwhere(self.array))
         return Vector(sample[0], sample[1])
 
-    def fit_in(
-        self, to_fit: Mask, anchor: Mask = None, to_fit_anchor: Mask = None
-    ) -> Mask:
-        """Returns a shape of the same size with true values where the given
-        shape fits inside. anchor defines the places of the object the shape to
-        fit needs to touch. to_fit_anchor defines the places of to_fit which
-        need to touch the object anchor. Both of these equals to their
-        reciprocate objects if None."""
-        if anchor is None:
-            anchor = deepcopy(self)
-        if to_fit_anchor is None:
-            to_fit_anchor = deepcopy(to_fit)
-        if self.size != anchor.size:
-            raise ValueError("Anchor has to have the same size as the object.")
-        if not anchor.is_subset_of(self):
-            raise ValueError("Anchor has to be subset of the object.")
-        if to_fit.size != to_fit_anchor.size:
-            raise ValueError(
-                "The object to fit has to have the same size as its anchor."
+    def fit_in(self, to_fit: Mask) -> Mask:
+        """Returns a mask that with the same size that defines at which coordinates
+        the given mask fits entirely."""
+        return Mask.from_array(
+            binary_erosion(
+                self.array,
+                structure=to_fit.array,
+                origin=center_to_top_left(to_fit.size),
             )
-        if not to_fit_anchor.is_subset_of(to_fit):
-            raise ValueError("The object to fit has to be a superset of its anchor.")
-
-        normalised_origin = (-(to_fit.h // 2), -(to_fit.w // 2))
-        structure = to_fit.array
-        # For dilation the structure and its origin needs to be flipped.
-        # Scipy library thing.
-        flipped_origin = ((to_fit.h - 1) // 2, (to_fit.w - 1) // 2)
-        flipped_structure = np.flip(to_fit_anchor.array)
-        fits_in = binary_erosion(
-            self.array, structure=structure, origin=normalised_origin
         )
+
+    def fit_in_touching_anchor(self, to_fit: Mask, anchor: Mask):
+        """Same as fit_in but the mask needs to additionally touch the coordinates
+        given by an anchor."""
+        check_masks_are_same_size(self, anchor)
+        check_anchor_is_subset(self, anchor)
         touches_anchor = binary_dilation(
-            anchor.array, structure=flipped_structure, origin=flipped_origin
+            anchor.array,
+            structure=np.flip(to_fit.array),
+            origin=center_to_bottom_right(to_fit.size),
         )
-        return Mask.from_array(fits_in & touches_anchor)
+        return self.fit_in(to_fit) & Mask.from_array(touches_anchor)
 
-        # TODO detect neighbours and create doors randomly
+    def fit_in_anchors_touching(self, to_fit: Mask, anchor: Mask, to_fit_anchor: Mask):
+        """Same as fit_in_touching_anchor but the given the mask to fit comes with
+        its own anchor that needs to touch this mask's anchor."""
+        check_masks_are_same_size(self, anchor)
+        check_anchor_is_subset(self, anchor)
+        check_masks_are_same_size(to_fit, to_fit_anchor)
+        check_anchor_is_subset(to_fit, to_fit_anchor)
+        anchors_touching = binary_dilation(
+            anchor.array,
+            structure=np.flip(to_fit_anchor.array),
+            origin=center_to_bottom_right(to_fit_anchor.size),
+        )
+        return self.fit_in(to_fit) & Mask.from_array(anchors_touching)

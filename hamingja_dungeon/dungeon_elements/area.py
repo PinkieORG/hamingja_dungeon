@@ -177,6 +177,6 @@ class Area(Mask):
         without_children = self.childless_shape().insert_shape(
             neighbour.origin, neighbour.object.border()
         )
-        return without_children.fit_in(
+        return without_children.fit_in_anchors_touching(
             to_fit, anchor=anchor, to_fit_anchor=to_fit.border()
         )

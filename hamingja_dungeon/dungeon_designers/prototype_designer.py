@@ -52,7 +52,7 @@ class PrototypeDesigner:
             raise ValueError("Hallway can be created only from a room.")
         room_origin = dungeon_area.get_child(room_id).origin
 
-        anchor_point = room.entrypoints.sample()
+        anchor_point = room.entrypoints.sample_mask_coordinate()
         origin_point = room_origin + anchor_point
         return self.hallway_designer.design_hallway(
             origin_point, Direction.get_all_directions()
@@ -64,7 +64,7 @@ class PrototypeDesigner:
         fit_area = dungeon_area.fit_in(start_room)
         if fit_area.is_empty():
             raise EmptyFitArea("Cannot fit the first room.")
-        origin = fit_area.sample()
+        origin = fit_area.sample_mask_coordinate()
         id = dungeon_area.add_room(origin, start_room)
         self._to_process.append(id)
         self.hallway_designer = HallwayDesigner(dungeon_area)
@@ -79,7 +79,7 @@ class PrototypeDesigner:
         entrypoints = Mask.empty_mask(sector.size).insert_shape(origin, room.entrypoints)
 
         nearby = set()
-        for entrypoint in entrypoints.points():
+        for entrypoint in entrypoints.mask_coordinates():
             ids = sector.get_children_at(entrypoint)
             ids.remove(room_id)
             for id in ids:
