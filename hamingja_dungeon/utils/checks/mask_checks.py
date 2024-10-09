@@ -9,7 +9,7 @@ from hamingja_dungeon.utils.vector import Vector
 
 def check_masks_are_same_size(first_mask: Mask, second_mask: Mask) -> None:
     if first_mask.size != second_mask.size:
-        raise ValueError("Shapes need to have the same sizes.")
+        raise ValueError("Masks need to have the same sizes.")
 
 
 def check_vector_is_positive(vector: Vector) -> None:
@@ -20,3 +20,13 @@ def check_vector_is_positive(vector: Vector) -> None:
 def check_thickness_is_positive(thickness: int) -> None:
     if thickness < 0:
         raise ValueError("Thickness cannot be negative.")
+
+
+def check_anchor_is_subset(superset: Mask, anchor: Mask) -> None:
+    if not anchor.is_subset_of(superset):
+        raise ValueError("Anchor has to be subset of the mask.")
+
+
+def check_mask_is_not_empty(mask: Mask) -> None:
+    if mask.is_empty():
+        raise ValueError("The mask cannot be empty.")
