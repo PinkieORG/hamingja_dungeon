@@ -49,10 +49,10 @@ class PrototypeDesigner:
         return room
 
     def _create_hallway(self, dungeon_area: Sector, room_id: int):
-        room = dungeon_area.get_child(room_id).area
+        room = dungeon_area.get_child(room_id)
         if not isinstance(room, Chamber):
             raise ValueError("Hallway can be created only from a room.")
-        room_origin = dungeon_area.get_child(room_id).origin
+        room_origin = dungeon_area.get_child_origin(room_id)
 
         anchor_point = room.entrypoints.sample_mask_coordinate()
         origin_point = room_origin + anchor_point
@@ -67,14 +67,13 @@ class PrototypeDesigner:
         if fit_area.is_empty():
             raise EmptyFitArea("Cannot fit the first room.")
         origin = fit_area.sample_mask_coordinate()
-        id = dungeon_area.add_room(origin, start_room)
+        id = dungeon_area.add_chamber(origin, start_room)
         self._to_process.append(id)
         self.hallway_designer = HallwayDesigner(dungeon_area)
 
     def connect_nearby(self, sector: Sector, room_id: int) -> None:
-        child = sector.get_child(room_id)
-        room = child.area
-        origin = child.origin
+        room = sector.get_chamber(room_id)
+        origin = sector.get_child_origin(room_id)
         if not isinstance(room, Chamber):
             raise ValueError("Can connect only rooms.")
 
@@ -86,19 +85,19 @@ class PrototypeDesigner:
             ids.remove(room_id)
             for id in ids:
                 child = sector.get_child(id)
-                if not isinstance(child.area, Chamber):
+                if not isinstance(child, Chamber):
                     continue
                 child_entrypoints = Mask.empty_mask(sector.size).insert_mask(
-                    child.origin, child.area.entrypoints
+                    sector.get_child_origin(room_id), child.entrypoints
                 )
                 if not (entrypoints & child_entrypoints).is_empty():
                     nearby.add(id)
 
-        for nearby_id in nearby:
-            distance = sector.room_graph.distances(room_id, nearby_id)[0][0]
-            if distance < 3:
-                continue
-            sector.make_entrance(room_id, nearby_id)
+        # for nearby_id in nearby:
+        #     distance = sector.children.distances(room_id, nearby_id)[0][0]
+        #     if distance < 3:
+        #         continue
+        #     sector.make_entrance_between(room_id, nearby_id)
 
     def _add_room(self, sector: Sector):
         if len(self._to_process) == 0:
@@ -107,7 +106,7 @@ class PrototypeDesigner:
         neighbour_id = random.choice(self._to_process)
         while tries < 2:
             num = random.random()
-            if num < 0.6 or isinstance(sector.get_child(neighbour_id).area, Hallway):
+            if num < 0.6 or isinstance(sector.get_child(neighbour_id), Hallway):
                 room = self._get_room()
                 try:
                     new_room_id = sector.add_room_adjacent(room, neighbour_id)
@@ -121,7 +120,7 @@ class PrototypeDesigner:
             else:
                 try:
                     origin, hallway = self._create_hallway(sector, neighbour_id)
-                    new_room_id = sector.add_room(origin, hallway)
+                    new_room_id = sector.add_chamber(origin, hallway)
                     # sector.make_entrance(neighbour_id, new_room_id)
                     self.connect_nearby(sector, new_room_id)
 
@@ -139,7 +138,7 @@ class PrototypeDesigner:
             if not isinstance(room.area, Hallway):
                 continue
             if room.area.has_dead_end():
-                sector.remove_room(room_id)
+                sector.remove_chamber(room_id)
 
     # TODO populate with iterations.
     def populate(self, sector: Sector):
@@ -148,6 +147,4 @@ class PrototypeDesigner:
             code = self._add_room(sector)
             if code == -1:
                 break
-        self.remove_dead_ends(sector)
-        self.remove_dead_ends(sector)
-        self.remove_dead_ends(sector)
+
